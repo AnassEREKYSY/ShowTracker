@@ -2,33 +2,179 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
+enum MediaType {
+  movie
+  tv
+}
+
+enum TimeWindow {
+  day
+  week
+}
 
 model User {
-  id String @id @default(uuid())
-  email String? @unique
-  createdAt DateTime @default(now())
+  id        String          @id @default(uuid())
+  email     String?         @unique
+  createdAt DateTime        @default(now())
   favorites Favorite[]
+  watchlist WatchlistItem[]
+  searches  SearchHistory[]
 }
 
+model Actor {
+  id          String        @id @default(uuid())
+  tmdbId      Int           @unique
+  name        String
+  profilePath String?
+  createdAt   DateTime      @default(now())
+  movies      MovieActor[]
+  tvShows     TVShowActor[]
+
+  @@index([name])
+}
+
+model Genre {
+  id        String        @id @default(uuid())
+  tmdbId    Int           @unique
+  name      String
+  createdAt DateTime      @default(now())
+  movies    MovieGenre[]
+  tvShows   TVShowGenre[]
+
+  @@index([name])
+}
+
+model Movie {
+  id           String       @id @default(uuid())
+  tmdbId       Int          @unique
+  title        String
+  releaseDate  DateTime?
+  overview     String?
+  posterPath   String?
+  backdropPath String?
+  rating       Float?
+  createdAt    DateTime     @default(now())
+  actors       MovieActor[]
+  genres       MovieGenre[]
+
+  @@index([title])
+}
+
+model TVShow {
+  id           String        @id @default(uuid())
+  tmdbId       Int           @unique
+  name         String
+  firstAirDate DateTime?
+  overview     String?
+  posterPath   String?
+  backdropPath String?
+  rating       Float?
+  createdAt    DateTime      @default(now())
+  actors       TVShowActor[]
+  genres       TVShowGenre[]
+
+  @@index([name])
+}
+
+model MovieActor {
+  movieId     String
+  actorId     String
+  character   String?
+  creditOrder Int?
+  movie       Movie   @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  actor       Actor   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, actorId])
+}
+
+model TVShowActor {
+  tvShowId    String
+  actorId     String
+  character   String?
+  creditOrder Int?
+  tvShow      TVShow  @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  actor       Actor   @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@id([tvShowId, actorId])
+}
+
+model MovieGenre {
+  movieId String
+  genreId String
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([movieId, genreId])
+}
+
+model TVShowGenre {
+  tvShowId String
+  genreId  String
+  tvShow   TVShow @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  genre    Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([tvShowId, genreId])
+}
 
 model Favorite {
-  id String @id @default(uuid())
-  userId String
-  tmdbId Int
-  type String // "movie" | "tv"
-  title String?
+  id         String    @id @default(uuid())
+  userId     String
+  mediaType  MediaType
+  tmdbId     Int
+  title      String?
   posterPath String?
-  createdAt DateTime @default(now())
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, mediaType, tmdbId])
+  @@index([userId, createdAt])
+}
 
-  user User @relation(fields: [userId], references: [id])
+model WatchlistItem {
+  id         String    @id @default(uuid())
+  userId     String
+  mediaType  MediaType
+  tmdbId     Int
+  title      String?
+  posterPath String?
+  addedAt    DateTime  @default(now())
+  position   Int?
+  plannedAt  DateTime?
+  status     String? // planned|watching|finished (optional)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, mediaType, tmdbId])
+  @@index([userId, addedAt])
+}
 
-  @@unique([userId, tmdbId, type])
+model SearchHistory {
+  id           String   @id @default(uuid())
+  userId       String
+  query        String
+  totalResults Int?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([query])
+}
+
+model Trending {
+  id         String     @id @default(uuid())
+  mediaType  MediaType
+  tmdbId     Int
+  rank       Int
+  timeWindow TimeWindow
+  fetchedAt  DateTime   @default(now())
+  title      String?
+  posterPath String?
+
+  @@unique([mediaType, tmdbId, timeWindow, fetchedAt])
+  @@index([timeWindow, fetchedAt])
+  @@index([rank])
 }
