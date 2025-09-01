@@ -1,17 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
-import {
-  LoginRequestDto, LoginResponseDto,
-  RegisterRequestDto, RegisterResponseDto,
-  RefreshResponseDto, MeResponseDto
-} from '../dtos/auth.dto';
+import { environment } from '../../../../environments/environment';
+import {LoginRequestDto, LoginResponseDto,RegisterRequestDto, RegisterResponseDto,RefreshResponseDto, MeResponseDto } from '../../dtos/auth.dto';
 
 
 import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
-export class AuthService {
+export class AuthApiService {
   private base = environment.apiBaseUrl + '/auth';
 
   constructor(private http: HttpClient) {}

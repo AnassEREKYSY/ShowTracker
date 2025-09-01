@@ -1,11 +1,11 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { AuthStateService } from '../services/auth-state.service';
-import { TokenStorageService } from '../services/token-storage.service';
+import { TokenStorageService } from '../services/api-layer/token-storage.service';
 import { Observable, Subject, throwError } from 'rxjs';
 import { catchError, filter, switchMap, take } from 'rxjs/operators';
 import { HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
+import { AuthStateService } from '../services/client-layer/auth-state.service';
 
 let refreshInProgress = false;
 const refreshSubject = new Subject<string>();

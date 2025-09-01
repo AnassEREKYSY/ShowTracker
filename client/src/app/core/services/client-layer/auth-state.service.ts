@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, map, tap } from 'rxjs';
-import { AuthService } from './auth.service';
-import { TokenStorageService } from './token-storage.service';
-import { AuthState, AuthUser } from '../models/auth.model';
-import { LoginRequestDto, RegisterRequestDto } from '../dtos/auth.dto';
+import { AuthApiService } from '../api-layer/auth-api.service';
+import { TokenStorageService } from '../api-layer/token-storage.service';
+import { AuthState, AuthUser } from '../../models/auth.model';
+import { LoginRequestDto, RegisterRequestDto } from '../../dtos/auth.dto';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStateService {
@@ -12,7 +12,7 @@ export class AuthStateService {
   });
   state$ = this._state$.asObservable();
 
-  constructor(private api: AuthService, private tokens: TokenStorageService) {}
+  constructor(private api: AuthApiService, private tokens: TokenStorageService) {}
 
   get accessToken(): string | null { return this.tokens.token; }
   get user(): AuthUser | null { return this._state$.value.user; }

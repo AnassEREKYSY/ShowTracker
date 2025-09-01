@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
-import { MovieDto, MovieSummaryDto, PagedDto } from '../dtos/movie.dtos';
+import { MovieDto, MovieSummaryDto, PagedDto } from '../../dtos/movie.dtos';
 
 export interface DiscoverQueryDto {
   page?: number;
@@ -13,7 +13,7 @@ export interface DiscoverQueryDto {
 
 @Injectable({ providedIn: 'root' })
 
-export class MovieService {
+export class MoviesApiService {
   private base = `${environment.apiBaseUrl}/api/movies`;
 
   constructor(private http: HttpClient) {}
