@@ -10,6 +10,7 @@ datasource db {
 enum MediaType {
   movie
   tv
+  person   
 }
 
 enum TimeWindow {
