@@ -18,12 +18,17 @@ enum TimeWindow {
 }
 
 model User {
-  id        String          @id @default(uuid())
-  email     String?         @unique
-  createdAt DateTime        @default(now())
-  favorites Favorite[]
-  watchlist WatchlistItem[]
-  searches  SearchHistory[]
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  tokenVersion Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastLoginAt  DateTime?
+
+  favorites    Favorite[]
+  watchlist    WatchlistItem[]
+  searches     SearchHistory[]
 }
 
 model Actor {
