@@ -1,1 +1,24 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+:root{
+  --nf-black: #0b0b0b;
+  --nf-card:  #141414;
+  --nf-text:  #e6e6e6;
+  --nf-muted: #b3b3b3;
+
+  --nf-red:        #c62828;
+  --nf-red-hover:  #b71c1c;
+}
+
+.mat-mdc-raised-button.mat-primary{
+  background: var(--nf-red) !important;
+  color: #fff !important;
+}
+.mat-mdc-raised-button.mat-primary:hover{
+  background: var(--nf-red-hover) !important;
+}
+
+a.link{ color: var(--nf-red); text-decoration: none; }
+a.link:hover{ text-decoration: underline; }
+
+.w-100{ width: 100%; }

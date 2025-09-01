@@ -1,0 +1,83 @@
+.auth-shell{
+  min-height: 100dvh;
+  background: var(--nf-black);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card{
+  width: min(420px, 92vw);
+  background: var(--nf-card);
+  color: var(--nf-text);
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.6);
+  text-align: center;
+
+  .title{
+    margin: 6px 0 18px;
+    font-weight: 700;
+    letter-spacing: .2px;
+  }
+
+  .logo{
+    width: 44px; height: 44px; margin: 0 auto 4px;
+    border-radius: 10px; background: var(--nf-red);
+    display: grid; place-items: center; color: #fff; font-weight: 800;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+  }
+
+  .mat-mdc-form-field{ width: 100%; margin-bottom: 12px; }
+
+  .divider{ height: 1px; background: rgba(255,255,255,.08); margin: 18px 0; }
+  .muted{ color: var(--nf-muted); }
+  .error{ margin-top: 10px; color: #ff6b6b; font-size: .95rem; }
+
+  button[mat-raised-button]{ height: 44px; font-weight: 600; }
+}
+
+.auth-card .mat-mdc-input-element,
+.auth-card .mdc-text-field__input{
+  color: var(--nf-text);
+  caret-color: var(--nf-text);
+}
+
+.auth-card .mat-mdc-input-element::placeholder,
+.auth-card .mdc-text-field__input::placeholder{
+  color: rgba(255,255,255,.92);
+  opacity: 1; 
+}
+
+.auth-card .mdc-floating-label{
+  color: rgba(255,255,255,.85) !important;
+}
+
+.auth-card .mdc-notched-outline__leading,
+.auth-card .mdc-notched-outline__trailing,
+.auth-card .mdc-notched-outline__notch{
+  border-color: rgba(255,255,255,.16) !important;
+}
+.auth-card .mat-mdc-icon-button mat-icon{
+  color: rgba(255,255,255,.75);
+}
+
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus,
+.auth-card textarea:-webkit-autofill,
+.auth-card textarea:-webkit-autofill:hover,
+.auth-card textarea:-webkit-autofill:focus,
+.auth-card select:-webkit-autofill,
+.auth-card select:-webkit-autofill:hover,
+.auth-card select:-webkit-autofill:focus{
+  -webkit-text-fill-color: var(--nf-text) !important;
+  caret-color: var(--nf-text);
+  -webkit-box-shadow: 0 0 0px 1000px var(--nf-card) inset !important;
+  box-shadow:        0 0 0px 1000px var(--nf-card) inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.auth-card input:-internal-autofill-selected{
+  appearance: none !important;
+}
