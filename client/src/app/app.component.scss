@@ -1,0 +1,7 @@
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: calc(100vh - 64px);
+  background: var(--nf-black);
+}
+.content { overflow: auto; padding: 16px 24px 32px; color: var(--nf-text); }

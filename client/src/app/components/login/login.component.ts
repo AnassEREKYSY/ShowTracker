@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,7 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthStateService } from '../../core/services/client-layer/auth-state.service';
-import { LoginRequestDto } from '../../core/dtos/auth.dto';
+import { finalize } from 'rxjs';
+
 
 @Component({
   selector: 'app-login',
@@ -22,9 +23,10 @@ import { LoginRequestDto } from '../../core/dtos/auth.dto';
   ],
 })
 export class LoginComponent {
-  private fb = inject(FormBuilder);
+ private fb = inject(FormBuilder);
   private auth = inject(AuthStateService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   hide = true;
   loading = false;
@@ -37,16 +39,19 @@ export class LoginComponent {
 
   submit() {
     if (this.form.invalid || this.loading) return;
+
     this.loading = true;
     this.error = null;
 
-    const dto: LoginRequestDto = this.form.getRawValue();
-    this.auth.login$(dto).subscribe({
-      next: () => this.router.navigateByUrl('/'),
-      error: (err: HttpErrorResponse) => {
-        this.loading = false;
-        this.error = (err.error?.message as string) || 'Login failed. Please check your credentials.';
-      },
-    });
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+
+    this.auth.login$(this.form.getRawValue())
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: () => this.router.navigateByUrl(returnUrl),
+        error: (err: HttpErrorResponse) => {
+          this.error = (err.error?.message as string) || 'Login failed. Please check your credentials.';
+        },
+      });
   }
 }

@@ -1,0 +1,34 @@
+<mat-toolbar class="nav">
+  <button mat-icon-button class="menu-btn" (click)="menu.emit()" aria-label="Open menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <div class="brand">ShowTracker</div>
+
+  <span class="spacer"></span>
+
+  <button mat-icon-button aria-label="Notifications">
+    <mat-icon>notifications</mat-icon>
+  </button>
+
+  <button mat-button [matMenuTriggerFor]="userMenu" class="avatar-btn" aria-label="Profile menu">
+    <img *ngIf="avatarUrl; else letter" [src]="avatarUrl" alt="profile" class="avatar" />
+    <ng-template #letter><div class="avatar">{{ userLetter }}</div></ng-template>
+  </button>
+
+  <!-- search is the last element, on the far right -->
+  <form class="search" (ngSubmit)="submit()">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="search" placeholder="Search everything" />
+    </mat-form-field>
+  </form>
+
+  <mat-menu #userMenu="matMenu" xPosition="before">
+    <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profile</span></button>
+    <button mat-menu-item routerLink="/favorites"><mat-icon>favorite</mat-icon><span>Favorites</span></button>
+    <button mat-menu-item routerLink="/watchlist"><mat-icon>bookmark</mat-icon><span>Watchlist</span></button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="logout()"><mat-icon>logout</mat-icon><span>Sign out</span></button>
+  </mat-menu>
+</mat-toolbar>

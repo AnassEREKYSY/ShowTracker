@@ -9,7 +9,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthStateService } from '../../core/services/client-layer/auth-state.service';
-import { RegisterRequestDto } from '../../core/dtos/auth.dto';
 
 
 @Component({
@@ -47,9 +46,7 @@ export class RegisterComponent {
     this.loading = true; this.error = null;
 
     const { email, password } = this.form.getRawValue();
-    const dto: RegisterRequestDto = { email, password };
-
-    this.auth.register$(dto).subscribe({
+    this.auth.register$({ email, password }).subscribe({
       next: () => this.router.navigateByUrl('/'),
       error: (err: HttpErrorResponse) => {
         this.loading = false;

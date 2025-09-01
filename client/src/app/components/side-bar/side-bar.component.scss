@@ -1,0 +1,35 @@
+.side{
+  width: 260px; height: 100%;
+  background: var(--nf-black);
+  color: var(--nf-text);
+  border-right: 1px solid rgba(255,255,255,.06);
+  padding: 12px 8px;
+}
+
+.logo{
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--nf-red); color: #fff; display: grid; place-items: center;
+  font-weight: 800; margin: 6px 10px 16px;
+}
+
+.side a.mat-mdc-list-item{
+  color: #fff;
+  border-radius: 12px;
+  margin: 6px 8px;
+  transition: background .15s ease, color .15s ease;
+}
+.side a.mat-mdc-list-item .mat-icon{
+  color: rgb(255, 255, 255);
+}
+
+.side a.mat-mdc-list-item:hover{
+  background: var(--nf-red);
+  color: #fff;
+}
+.side a.mat-mdc-list-item:hover .mat-icon{ color: #fff; }
+
+.side a.active{
+  background: var(--nf-red);
+  color: #fff;
+}
+.side a.active .mat-icon{ color: #fff; }
