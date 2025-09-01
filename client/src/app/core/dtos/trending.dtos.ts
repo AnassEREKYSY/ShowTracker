@@ -1,9 +1,10 @@
-export type MediaTypeDto = 'movie' | 'tv';
+import { MediaType } from "../types/media.types";
+
 export type TimeWindowDto = 'day' | 'week';
 
 export interface TrendingItemDto {
   id: string;
-  mediaType: MediaTypeDto; 
+  mediaType: MediaType; 
   tmdbId: number;
   rank: number;
   timeWindow: TimeWindowDto;

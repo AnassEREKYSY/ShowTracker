@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
-import { MediaTypeDto, TimeWindowDto, TrendingListResponseDto, TrendingSyncResponseDto } from '../../dtos/trending.dtos';
+import { TimeWindowDto, TrendingListResponseDto, TrendingSyncResponseDto } from '../../dtos/trending.dtos';
+import { MediaType } from '../../types/media.types';
 
 @Injectable({ providedIn: 'root' })
 export class TrendingApiService {
@@ -10,7 +11,7 @@ export class TrendingApiService {
 
   constructor(private http: HttpClient) {}
 
-  getTrending$(mediaType: MediaTypeDto, timeWindow: TimeWindowDto, limit = 20)
+  getTrending$(mediaType: MediaType, timeWindow: TimeWindowDto, limit = 20)
   : Observable<TrendingListResponseDto> {
     const params = new HttpParams()
       .set('mediaType', mediaType)
@@ -19,7 +20,7 @@ export class TrendingApiService {
     return this.http.get<TrendingListResponseDto>(`${this.base}/trending`, { params });
   }
 
-  syncTrending$(mediaType: MediaTypeDto, timeWindow: TimeWindowDto)
+  syncTrending$(mediaType: MediaType, timeWindow: TimeWindowDto)
   : Observable<TrendingSyncResponseDto> {
     const params = new HttpParams()
       .set('mediaType', mediaType)
