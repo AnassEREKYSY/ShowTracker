@@ -36,6 +36,7 @@
 .section{ margin-top: 24px; }
 .section-head{ display:flex; align-items:center; justify-content:space-between; margin:6px 4px 12px; }
 .section-head h2{ margin: 0; color:#fff; font-size: 18px; letter-spacing:.2px; }
+.section-head .muted{ color: rgba(255,255,255,.6); font-size: 12px; }
 
 .grid-4{
   display: grid;
@@ -45,3 +46,7 @@
 @media (max-width: 1200px){ .grid-4{ grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 900px){ .grid-4{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px){ .grid-4{ grid-template-columns: 1fr; } }
+
+.load-more{
+  display:flex; justify-content:center; margin: 18px 0 8px;
+}

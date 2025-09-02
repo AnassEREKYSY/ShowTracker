@@ -24,15 +24,18 @@
     </div>
   </section>
 
-  <section class="section">
+  <section class="section" *ngIf="popularState$ | async as pop">
     <header class="section-head">
       <h2>Popular</h2>
+      <span class="muted" *ngIf="pop.totalPages">Page {{ pop.loadedPages }} / {{ pop.totalPages }}</span>
     </header>
 
-    <ng-container *ngIf="popular$ | async as pop">
-      <div class="grid-4">
-        <app-movie-card *ngFor="let m of pop.results" [movie]="m"></app-movie-card>
-      </div>
-    </ng-container>
+    <div class="grid-4">
+      <app-movie-card *ngFor="let m of pop.items" [movie]="m"></app-movie-card>
+    </div>
+
+    <div class="load-more" *ngIf="!pop.totalPages || pop.loadedPages < pop.totalPages">
+      <button mat-raised-button color="primary" (click)="loadMore()">Load more</button>
+    </div>
   </section>
 </div>
