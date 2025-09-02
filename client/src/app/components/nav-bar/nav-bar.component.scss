@@ -9,37 +9,88 @@
 }
 
 .menu-btn{ margin-right: 8px; }
+
 .brand{
-  font-weight: 800; letter-spacing: .3px; margin-right: 16px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  margin-right: 16px;
   color: var(--nf-red);
 }
 
 .spacer{ flex: 1 1 auto; }
 
 .avatar-btn{ min-width: 0; padding: 0 6px; margin-right: 12px; }
+
 .avatar{
   width: 34px; height: 34px; border-radius: 50%;
-  background: var(--nf-red); color: #fff; display: grid; place-items: center;
-  font-weight: 700; text-transform: uppercase; overflow: hidden;
+  background: var(--nf-red); color:#fff;
+  display:grid; place-items:center;
+  font-weight:700; overflow:hidden;
 }
 
-.search { margin-left: 0; border:1px solid rgba(255,255,255,.1); }
+
+.search{
+  margin-left: 12px;
+  display: flex;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  padding: 2px;
+}
 
 .search-field{
-  width: clamp(240px, 30vw, 420px);
+  width: clamp(220px, 28vw, 420px);
+
+  --mat-form-field-container-height: 34px;
+  --mat-form-field-container-vertical-padding: 0;
+  --mat-form-field-container-text-size: 14px;
+
+  --mdc-outlined-text-field-outline-color: transparent;
+  --mdc-outlined-text-field-hover-outline-color: transparent;
+  --mdc-outlined-text-field-focus-outline-color: transparent;
 }
+
 .search-field .mdc-notched-outline__leading,
 .search-field .mdc-notched-outline__trailing,
 .search-field .mdc-notched-outline__notch{
-  border-color: #fff !important;
-  border-radius: 999px !important;
+  border-color: transparent !important;
 }
+
+.search-field .mat-mdc-text-field-wrapper{
+  border: none !important;
+  background: transparent; 
+  box-shadow: none !important;
+  border-radius: 999px;
+  padding: 0;
+}
+
+.search-field .mat-mdc-form-field-focus-overlay{
+  background: transparent !important;
+}
+
 .search-field .mat-mdc-form-field-flex{
+  height: 34px;
+  padding: 0 12px;
+  align-items: center;
   background: transparent;
 }
-.search-field .mat-mdc-input-element{
-  color: #fff;
-  caret-color: #fff;
+
+.search-field .mat-mdc-form-field-infix{
+  padding: 0 !important;
+  min-height: 0;
 }
-.search-field .mat-mdc-input-element::placeholder{ color: rgba(255,255,255,.92); opacity: 1; }
-.search-field mat-icon{ color: #fff; }
+
+.search-field .mat-mdc-input-element{
+  color:#fff;
+  caret-color:#fff;
+}
+.search-field .mat-mdc-input-element::placeholder{
+  color: rgba(255,255,255,.72);
+  opacity: 1;
+}
+.search-field mat-icon{
+  color:#fff;
+  margin-right: 6px;
+  width: 18px; height: 18px; font-size: 18px; line-height: 18px;
+}
+
+

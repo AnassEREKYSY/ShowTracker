@@ -1,7 +1,7 @@
 .side{
   width: 260px; height: 100%;
   background: var(--nf-black);
-  color: var(--nf-text);
+  color: #fff;
   border-right: 1px solid rgba(255,255,255,.06);
   padding: 12px 8px;
 }
@@ -18,18 +18,20 @@
   margin: 6px 8px;
   transition: background .15s ease, color .15s ease;
 }
-.side a.mat-mdc-list-item .mat-icon{
-  color: rgb(255, 255, 255);
+
+.side a.mat-mdc-list-item .mat-mdc-list-item-title,
+.side a.mat-mdc-list-item .mat-mdc-list-item-line,
+.side a.mat-mdc-list-item .mdc-list-item__primary-text{
+  color: #fff !important;
 }
 
+.side a.mat-mdc-list-item .mat-icon{ color: #fff; }
+
 .side a.mat-mdc-list-item:hover{
-  background: var(--nf-red);
+  background: rgba(231, 15, 26, 0.363);
   color: #fff;
 }
 .side a.mat-mdc-list-item:hover .mat-icon{ color: #fff; }
 
-.side a.active{
-  background: var(--nf-red);
-  color: #fff;
-}
+.side a.active{ background: var(--nf-red); color: #fff; }
 .side a.active .mat-icon{ color: #fff; }
