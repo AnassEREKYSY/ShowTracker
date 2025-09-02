@@ -19,11 +19,11 @@ export class SidebarComponent {
   @Output() navigate = new EventEmitter<void>();
 
   items: NavItem[] = [
-    { icon: 'movie',        label: 'Movies',    link: '/movies' },
-    { icon: 'person',       label: 'Actors',    link: '/actors' },
+    { icon: 'movie',        label: 'Movies',    link: '/home' },
+    { icon: 'person',       label: 'Favorite actors',    link: '/actors' },
     { icon: 'whatshot',     label: 'Popular',   link: '/popular' },
     { icon: 'trending_up',  label: 'Trend',     link: '/trend' },
-    { icon: 'favorite',     label: 'Favorites', link: '/favorites' },
+    { icon: 'favorite',     label: 'Favorite movies', link: '/favorites/movies' },
     { icon: 'bookmark',     label: 'Watchlist', link: '/watchlist' },
   ];
 }

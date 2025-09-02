@@ -7,7 +7,7 @@ import { MediaType } from '../../types/media.types';
 
 @Injectable({ providedIn: 'root' })
 export class TrendingApiService {
-  private base = `${environment.apiBaseUrl}/api`;
+  private base = `${environment.apiBaseUrl}`;
 
   constructor(private http: HttpClient) {}
 

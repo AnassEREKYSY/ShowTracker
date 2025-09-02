@@ -1,0 +1,30 @@
+<section class="wrap">
+  <header class="header">
+    <h1>My Favorite Movies</h1>
+    <div class="hint">Click the heart on a card to remove it.</div>
+  </header>
+
+  <ng-container *ngIf="movies$ | async as movies; else loading">
+    <ng-container *ngIf="movies.length; else empty">
+      <div class="grid" role="list">
+        <app-movie-card
+          *ngFor="let m of movies; trackBy: trackById"
+          role="listitem"
+          [movie]="m"
+          [link]="['/movies', m.id]">
+        </app-movie-card>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="state">Loading your favorites…</div>
+  </ng-template>
+
+  <ng-template #empty>
+    <div class="state">
+      <p>No favorite movies yet.</p>
+      <a routerLink="/movies" class="cta">Browse movies</a>
+    </div>
+  </ng-template>
+</section>

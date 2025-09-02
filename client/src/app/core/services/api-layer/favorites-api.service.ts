@@ -7,7 +7,7 @@ import { MediaType } from '../../types/media.types';
 
 @Injectable({ providedIn: 'root' })
 export class FavoritesApiService {
-  private base = `${environment.apiBaseUrl}/api/favorites`;
+  private base = `${environment.apiBaseUrl}/favorites`;
 
   constructor(private http: HttpClient) {}
 

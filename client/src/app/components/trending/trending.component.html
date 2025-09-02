@@ -1,0 +1,53 @@
+<section class="wrap">
+  <header class="section-head">
+    <div class="lhs">
+      <h2>Trending Movies</h2>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="tw-select">
+        <mat-label>Time window</mat-label>
+        <mat-select
+          [value]="(tw$ | async) ?? 'day'"
+          (selectionChange)="setWindow($event.value)"
+          aria-label="Time window">
+          <mat-option value="day">Today</mat-option>
+          <mat-option value="week">This week</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="rhs">
+      <button mat-raised-button color="primary" (click)="syncNow()">
+        <mat-icon>sync</mat-icon>
+        <span>Sync now</span>
+      </button>
+    </div>
+  </header>
+
+  <ng-container *ngIf="items$ | async as items; else loading">
+    <ng-container *ngIf="items.length; else empty">
+      <div class="grid-4" role="list">
+        <app-movie-card
+          *ngFor="let m of items; trackBy: trackById"
+          role="listitem"
+          [movie]="m"
+          [link]="['/movies', m.id]">
+        </app-movie-card>
+      </div>
+
+      <div class="load-more" *ngIf="items.length < 50">
+        <button mat-raised-button color="primary" (click)="loadMore()">Load more</button>
+      </div>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="state">Loading trending…</div>
+  </ng-template>
+
+  <ng-template #empty>
+    <div class="state">
+      <p>No trending cached yet for this window.</p>
+      <button mat-stroked-button color="primary" (click)="syncNow()">Fetch now</button>
+    </div>
+  </ng-template>
+</section>

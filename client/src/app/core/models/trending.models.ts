@@ -11,3 +11,5 @@ export interface TrendingItem {
   title?: string | null;
   posterPath?: string | null;
 }
+
+export { MediaType };

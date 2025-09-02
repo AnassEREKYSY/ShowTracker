@@ -1,0 +1,66 @@
+:host { display:block; }
+.wrap { width: min(1240px, 100%); margin-inline: auto; padding: 16px; }
+
+.section-head{
+  display:flex; align-items:center; justify-content:space-between;
+  margin:6px 4px 12px;
+}
+.section-head h2{ margin:0; color:#fff; font-size:18px; letter-spacing:.2px; }
+.lhs{ display:flex; align-items:center; gap:12px; }
+.rhs{ display:flex; align-items:center; gap:10px; }
+
+/* Stylish pill-like select matching dark UI */
+.tw-select{
+  width: 170px;
+
+  --mat-form-field-container-height: 34px;
+  --mat-form-field-container-vertical-padding: 0;
+  --mat-form-field-container-text-size: 14px;
+
+  --mdc-outlined-text-field-outline-color: transparent;
+  --mdc-outlined-text-field-hover-outline-color: transparent;
+  --mdc-outlined-text-field-focus-outline-color: transparent;
+}
+.tw-select .mat-mdc-text-field-wrapper{
+  border: 1px solid rgba(255,255,255,.20);
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  box-shadow: none;
+  padding: 0;
+}
+.tw-select .mat-mdc-text-field-wrapper:hover{
+  border-color: rgba(255,255,255,.35);
+}
+.tw-select .mat-mdc-form-field-flex{
+  height: 34px;
+  padding: 0 10px;
+  align-items: center;
+}
+.tw-select .mat-mdc-form-field-infix{
+  padding: 0 !important;
+  min-height: 0;
+}
+.tw-select .mdc-notched-outline__leading,
+.tw-select .mdc-notched-outline__trailing,
+.tw-select .mdc-notched-outline__notch{
+  border-color: transparent !important;
+}
+.tw-select .mat-mdc-select-value,
+.tw-select .mat-mdc-select-arrow{
+  color: #fff;
+}
+.tw-select .mat-mdc-form-field-subscript-wrapper{
+  display: none;
+}
+
+.grid-4{
+  display:grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap:16px;
+}
+@media (max-width: 1200px){ .grid-4{ grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 900px){ .grid-4{ grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px){ .grid-4{ grid-template-columns: 1fr; } }
+
+.load-more{ display:flex; justify-content:center; margin: 18px 0 8px; }
+.state{ margin:48px 0; text-align:center; color:rgba(255,255,255,.82); font-size:14px; }

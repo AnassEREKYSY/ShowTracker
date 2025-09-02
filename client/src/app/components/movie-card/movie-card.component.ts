@@ -1,8 +1,14 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { MovieDto, MovieSummaryDto } from '../../core/dtos/movie.dtos';
 
+import { BehaviorSubject, combineLatest } from 'rxjs';
+import { map, switchMap, startWith, take } from 'rxjs/operators';
+
+import { MovieDto, MovieSummaryDto } from '../../core/dtos/movie.dtos';
+import { FavoritesService } from '../../core/services/client-layer/favorites.service';
+
+/** Accept both API DTO (snake_case) and mapped model (camelCase) */
 type AnyMovie =
   | (MovieSummaryDto & Partial<MovieDto>)
   | {
@@ -23,12 +29,13 @@ type AnyMovie =
   styleUrls: ['./movie-card.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MovieCardComponent {
+export class MovieCardComponent implements OnChanges {
   @Input({ required: true }) movie!: AnyMovie;
   @Input() link: any[] | string = [];
   @Input() yearOnly = true;
 
   private readonly IMG_BASE = 'https://image.tmdb.org/t/p/w500';
+  constructor(private favs: FavoritesService) {}
 
   get title(): string { return (this.movie as any).title ?? '—'; }
 
@@ -59,4 +66,42 @@ export class MovieCardComponent {
   }
   get hasPoster(): boolean { return !!this.posterPath; }
   posterUrl(): string { return `${this.IMG_BASE}${this.posterPath}`; }
+
+  private movieId$ = new BehaviorSubject<number | null>(null);
+  private refresh$ = new BehaviorSubject<void>(undefined);
+
+  isFav$ = combineLatest([
+    this.movieId$,
+    this.refresh$.pipe(startWith(undefined)),
+  ]).pipe(
+    switchMap(([id]) =>
+      this.favs.list$('movie').pipe(
+        map(list => !!id && list.some(x => x.tmdbId === id))
+      )
+    )
+  );
+
+  ngOnChanges(): void {
+    const id = (this.movie as any)?.id;
+    if (typeof id === 'number') this.movieId$.next(id);
+  }
+
+  toggleFavorite(ev: MouseEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const id = this.movieId$.value;
+    if (!id) return;
+
+    this.isFav$.pipe(take(1)).subscribe(current => {
+      const action$ = current
+        ? this.favs.remove$('movie', id)
+        : this.favs.add$('movie', id);
+
+      action$.subscribe({
+        next: () => this.refresh$.next(),
+        error: () => this.refresh$.next(),
+      });
+    });
+  }
 }
