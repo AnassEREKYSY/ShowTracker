@@ -1,15 +1,16 @@
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* ---------- Theme vars ---------- */
 :root{
   --nf-black: #0b0b0b;
   --nf-card:  #141414;
   --nf-text:  #e6e6e6;
   --nf-muted: #b3b3b3;
-
   --nf-red:        #c62828;
   --nf-red-hover:  #b71c1c;
 }
 
+/* ---------- Buttons / links ---------- */
 .mat-mdc-raised-button.mat-primary{
   background: var(--nf-red) !important;
   color: #fff !important;
@@ -17,8 +18,33 @@
 .mat-mdc-raised-button.mat-primary:hover{
   background: var(--nf-red-hover) !important;
 }
-
 a.link{ color: var(--nf-red); text-decoration: none; }
 a.link:hover{ text-decoration: underline; }
-
 .w-100{ width: 100%; }
+
+/* ---------- Layout: remove inner scrollbar ---------- */
+/* Let the window handle scrolling */
+html, body { min-height: 100%; margin: 0; overflow-x: hidden; }
+
+/* Angular Material sidenav/drawer creates an inner scroller by default.
+   Force content to not trap scroll, so we only have the browser scrollbar. */
+mat-sidenav-container { height: auto !important; min-height: 100vh; }
+.mat-drawer-content,
+mat-drawer-content,
+mat-sidenav-content {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+/* Sidebar: can scroll independently if it’s taller than the viewport */
+.side {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100vh;
+  overflow: auto;
+}
+
+/* Safety: avoid accidental horizontal scroll caused by wide children */
+* { box-sizing: border-box; }
+img, video { max-width: 100%; height: auto; display: block; }

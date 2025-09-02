@@ -14,7 +14,7 @@ export interface DiscoverQueryDto {
 @Injectable({ providedIn: 'root' })
 
 export class MoviesApiService {
-  private base = `${environment.apiBaseUrl}/api/movies`;
+  private base = `${environment.apiBaseUrl}/movies`;
 
   constructor(private http: HttpClient) {}
 

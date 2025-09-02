@@ -1,0 +1,21 @@
+<a class="card" [routerLink]="routerLink" [attr.aria-label]="title">
+  <div class="poster">
+    <img *ngIf="hasPoster; else placeholder" [src]="posterUrl()" [alt]="title" loading="lazy" />
+    <ng-template #placeholder><div class="ph" aria-hidden="true"></div></ng-template>
+  </div>
+
+  <div class="content">
+    <div class="title" [title]="title">{{ title }}</div>
+    <div class="sub">{{ releaseText }}</div>
+
+    <div class="meta">
+      <div class="genres" [title]="genresText">{{ genresText }}</div>
+      <div class="rating" [attr.aria-label]="'Rating ' + rating">
+        <svg class="star" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+        <span>{{ rating }}</span>
+      </div>
+    </div>
+  </div>
+</a>

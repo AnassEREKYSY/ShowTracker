@@ -1,1 +1,38 @@
-<p>home works!</p>
+<div class="page">
+  <section class="hero" *ngIf="hero$ | async as hero">
+    <img class="hero-bg" [src]="backdropUrl(hero)" alt="" (error)="onHeroImgError($event)" aria-hidden="true" />
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+      <div class="kicker">TRENDING</div>
+      <h1 class="hero-title">{{ hero.title }}</h1>
+
+      <div class="hero-meta">
+        <span class="pill rating">
+          <svg class="star" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+          </svg>
+          <b>{{ (hero.voteAverage ?? hero.voteAverage ?? 0) | number:'1.1-1' }}</b>
+        </span>
+        <span class="dot">•</span>
+        <span>{{ year(hero.releaseDate ?? hero.releaseDate) }}</span>
+      </div>
+
+      <div class="hero-actions">
+        <a mat-flat-button color="primary" class="watch-btn" [routerLink]="['/movies', hero.id]">Watch</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <header class="section-head">
+      <h2>Popular</h2>
+    </header>
+
+    <ng-container *ngIf="popular$ | async as pop">
+      <div class="grid-4">
+        <app-movie-card *ngFor="let m of pop.results" [movie]="m"></app-movie-card>
+      </div>
+    </ng-container>
+  </section>
+</div>
