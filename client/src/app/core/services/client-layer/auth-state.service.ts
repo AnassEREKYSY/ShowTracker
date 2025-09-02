@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, map, of, tap } from 'rxjs';
 import { AuthApiService } from '../api-layer/auth-api.service';
 import { TokenStorageService } from '../api-layer/token-storage.service';
 import { AuthState, AuthUser } from '../../models/auth.model';
@@ -54,9 +54,15 @@ export class AuthStateService {
     );
   }
 
-  setUserFromMe$(fallback = false) {
-    return this.api.me$().pipe(
-      tap(res => this._state$.next({ ...this._state$.value, user: res.user, isAuthenticated: !!this.tokens.token })),
-    );
-  }
+setUserFromMe$() {
+  return this.api.me$().pipe(
+    tap(res => this._state$.next({
+      ...this._state$.value,
+      user: res.user,
+      isAuthenticated: !!this.tokens.token
+    })),
+    catchError(() => of(void 0)),
+    map(() => void 0)
+  );
+}
 }

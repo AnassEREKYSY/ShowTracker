@@ -13,7 +13,7 @@ function initAuth() {
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes, withEnabledBlockingInitialNavigation()),
+    provideRouter(routes),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     provideAnimations(),
     { provide: APP_INITIALIZER, useFactory: initAuth, multi: true }
