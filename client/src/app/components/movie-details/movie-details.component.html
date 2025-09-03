@@ -1,0 +1,84 @@
+<ng-container *ngIf="movie$ | async as vm; else loading">
+  <section class="hero" [style.--bg]="'url(' + (vm.backdropUrl || '') + ')'">
+    <div class="overlay"></div>
+
+    <div class="content">
+      <div class="poster" *ngIf="vm.posterUrl; else posterPh">
+        <img [src]="vm.posterUrl" [alt]="vm.title" />
+      </div>
+      <ng-template #posterPh>
+        <div class="poster ph" aria-hidden="true"></div>
+      </ng-template>
+
+      <div class="info">
+        <div class="sup">
+          <span class="badge solid">PREMIUM</span>
+          <span class="badge age">13+</span>
+          <span class="badge rate">
+            <svg viewBox="0 0 24 24" class="star" aria-hidden="true">
+              <path d="M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+            </svg>
+            {{ vm.vote }}
+          </span>
+        </div>
+
+        <h1 class="title">{{ vm.title }}</h1>
+
+        <div class="meta">
+          <span *ngIf="vm.year">{{ vm.year }}</span>
+          <span *ngIf="vm.runtime">· {{ minuteText(vm.runtime) }}</span>
+          <span *ngIf="vm.genreText">· {{ vm.genreText }}</span>
+        </div>
+
+        <p class="overview">
+          {{ vm.overview || 'No overview available.' }}
+        </p>
+
+        <div class="actions">
+          <button class="btn primary" (click)="openTrailer(vm.trailerUrl)" [disabled]="!vm.trailerUrl">
+            ▶ Watch Trailer
+          </button>
+
+          <button class="icon-btn" (click)="toggleWatch(vm.id)" [class.active]="(isWatchFor(vm.id) | async)">
+            <svg class="eye" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5C7 5 2.73 8.11 1 12c1.73 3.89 6 7 11 7s9.27-3.11 11-7C21.27 8.11 17 5 12 5zm0 12c-2.76 0-5-2.24-5-5 0-2.77 2.24-5 5-5s5 2.23 5 5c0 2.76-2.24 5-5 5zm0-8a3 3 0 1 0 .001 6.001A3 3 0 0 0 12 9z"/>
+            </svg>
+            <span>{{ (isWatchFor(vm.id) | async) ? 'In Watchlist' : 'Add to Watchlist' }}</span>
+          </button>
+
+          <button class="icon-btn" (click)="toggleFavorite(vm.id)" [class.heart-active]="(isFavFor(vm.id) | async)">
+            <svg class="heart" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16.5 3c-1.74 0-3.41.81-4.5 2.09C10.91 3.81 9.24 3 7.5 3 4.42 3 2 5.42 2 8.5c0 3.78 3.4 6.86 8.55 11.54L12 21.35l1.45-1.32C18.6 15.36 22 12.28 22 8.5 22 5.42 19.58 3 16.5 3zM12 19.13l-.1-.1C7.14 14.69 4 12 4 8.5 4 6.5 5.5 5 7.5 5c1.54 0 3.04.99 3.57 2.36h1.87C13.46 5.99 14.96 5 16.5 5 18.5 5 20 6.5 20 8.5c0 3.54-3.14 6.23-7.9 10.53l-.1.1z"/>
+            </svg>
+            <span>{{ (isFavFor(vm.id) | async) ? 'Favorited' : 'Add to Favorites' }}</span>
+          </button>
+        </div>
+
+        <div class="cast" *ngIf="vm.cast?.length">
+          <div class="cast-title">Top cast</div>
+          <div class="cast-row">
+            <div class="person" *ngFor="let c of vm.cast">
+              <div class="avatar"
+                   [style.backgroundImage]="c.profile_path ? 'url(https://image.tmdb.org/t/p/w185' + c.profile_path + ')' : ''">
+              </div>
+              <div class="name" [title]="c.name">{{ c.name }}</div>
+              <div class="role" *ngIf="c.character" [title]="c.character">{{ c.character }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="crew" *ngIf="vm.directorText">
+          <span class="label">Director:</span>
+          <span class="value">{{ vm.directorText }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</ng-container>
+
+<ng-template #loading>
+  <div class="loading">
+    <mat-progress-spinner mode="indeterminate" diameter="46"></mat-progress-spinner>
+    <span>Loading movie…</span>
+  </div>
+</ng-template>

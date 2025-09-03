@@ -10,5 +10,7 @@ export const routes: Routes = [
   { path: 'trend', canActivate: [authGuard], loadComponent: () => import('./components/trending/trending.component').then(m => m.TrendingComponent)},
   { path: 'movies/popular', loadComponent: () => import('./components/popular-movies/popular-movies.component').then(m => m.PopularMoviesComponent) },
   { path: 'watchlist/movies', loadComponent: () => import('./components/watchlist-movies/watchlist-movies.component').then(m => m.WatchlistMoviesComponent) },
+  { path: 'movies/:id', loadComponent: () => import('./components/movie-details/movie-details.component').then(m => m.MovieDetailsComponent) },
+
 ];
 
