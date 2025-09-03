@@ -8,6 +8,7 @@ export const routes: Routes = [
   { path: 'home', loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent) },
   { path: 'favorites/movies', canActivate: [authGuard], loadComponent: () => import('../app/components/favorites-movies/favorites-movies.component').then(m => m.FavoritesMoviesComponent),},
   { path: 'trend', canActivate: [authGuard], loadComponent: () => import('./components/trending/trending.component').then(m => m.TrendingComponent)},
-
+  { path: 'movies/popular', loadComponent: () => import('./components/popular-movies/popular-movies.component').then(m => m.PopularMoviesComponent) },
+  { path: 'watchlist/movies', loadComponent: () => import('./components/watchlist-movies/watchlist-movies.component').then(m => m.WatchlistMoviesComponent) },
 ];
 

@@ -7,7 +7,7 @@ import { MediaType } from '../../types/media.types';
 
 @Injectable({ providedIn: 'root' })
 export class WatchlistApiService {
-  private base = `${environment.apiBaseUrl}/api/watchlist`;
+  private base = `${environment.apiBaseUrl}/watchlist`;
 
   constructor(private http: HttpClient) {}
 

@@ -21,9 +21,10 @@
 .poster{ position: relative; aspect-ratio: 2 / 3; background:#0e0e0e; }
 .poster img{ width:100%; height:100%; object-fit:cover; display:block; }
 
-.fav-btn{
+.fav-btn,
+.watch-btn{
   position: absolute;
-  top: 10px; right: 10px;
+  top: 10px;
   width: 36px; height: 36px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,.24);
@@ -35,15 +36,25 @@
   transition: opacity .15s ease, transform .15s ease, background .15s ease, border-color .15s ease;
   z-index: 2;
 }
-.card:hover .fav-btn{ opacity: 1; transform: translateY(0); }
-.fav-btn:hover{ background: rgba(0,0,0,.5); border-color: rgba(255,255,255,.5); }
+.card:hover .fav-btn,
+.card:hover .watch-btn{ opacity: 1; transform: translateY(0); }
+.fav-btn:hover,
+.watch-btn:hover{ background: rgba(0,0,0,.5); border-color: rgba(255,255,255,.5); }
 
-.heart{ width: 18px; height: 18px; display: block; }
+.watch-btn{ left: 10px; }
+.fav-btn{ right: 10px; }
+
+.heart, .eye{ width: 18px; height: 18px; display: block; }
+
 .heart.outline{ fill: none; stroke: #fff; stroke-width: 1.6; }
 .heart.filled{ fill: #e53935; display: none; }
-
 .fav-btn.filled .outline{ display: none; }
 .fav-btn.filled .filled{ display: block; }
+
+.eye.outline{ fill: rgba(255,255,255,.95); }
+.eye.filled{ fill: #4fc3f7; display: none; }
+.watch-btn.filled .outline{ display: none; }
+.watch-btn.filled .filled{ display: block; }
 
 .poster .ph{
   width:100%; height:100%;

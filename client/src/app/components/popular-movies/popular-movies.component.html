@@ -1,0 +1,41 @@
+<section class="wrap">
+  <header class="section-head">
+    <div class="lhs">
+      <h2>Popular Movies</h2>
+      <p class="hint">Browse what everyone’s watching right now.</p>
+    </div>
+  </header>
+
+  <ng-container *ngIf="vm$ | async as vm; else loading">
+    <ng-container *ngIf="vm.results?.length; else empty">
+      <div class="grid" role="list">
+        <app-movie-card
+          *ngFor="let m of vm.results; trackBy: trackById"
+          [movie]="m"
+          role="listitem">
+        </app-movie-card>
+      </div>
+
+      <mat-paginator
+        [length]="vm.totalResults || ((vm.totalPages || 0) * pageSize)"
+        [pageSize]="pageSize"
+        [pageIndex]="(vm.page || 1) - 1"
+        [pageSizeOptions]="[pageSize]"
+        (page)="onPage($event)">
+      </mat-paginator>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="loading">
+      <mat-progress-spinner mode="indeterminate" diameter="46"></mat-progress-spinner>
+      <span>Loading popular movies…</span>
+    </div>
+  </ng-template>
+
+  <ng-template #empty>
+    <div class="empty">
+      <p>No popular movies found.</p>
+    </div>
+  </ng-template>
+</section>

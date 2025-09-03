@@ -21,9 +21,9 @@ export class SidebarComponent {
   items: NavItem[] = [
     { icon: 'movie',        label: 'Movies',    link: '/home' },
     { icon: 'person',       label: 'Favorite actors',    link: '/actors' },
-    { icon: 'whatshot',     label: 'Popular',   link: '/popular' },
+    { icon: 'whatshot',     label: 'Popular',   link: '/movies/popular' },
     { icon: 'trending_up',  label: 'Trend',     link: '/trend' },
     { icon: 'favorite',     label: 'Favorite movies', link: '/favorites/movies' },
-    { icon: 'bookmark',     label: 'Watchlist', link: '/watchlist' },
+    { icon: 'bookmark',     label: 'Watchlist', link: 'watchlist/movies' },
   ];
 }

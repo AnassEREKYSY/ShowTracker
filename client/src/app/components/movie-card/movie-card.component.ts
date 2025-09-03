@@ -1,14 +1,13 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-
 import { BehaviorSubject, combineLatest } from 'rxjs';
 import { map, switchMap, startWith, take } from 'rxjs/operators';
-
 import { MovieDto, MovieSummaryDto } from '../../core/dtos/movie.dtos';
 import { FavoritesService } from '../../core/services/client-layer/favorites.service';
+import { WatchlistService } from '../../core/services/client-layer/watchlist.service';
+import { MediaType } from '../../core/types/media.types';
 
-/** Accept both API DTO (snake_case) and mapped model (camelCase) */
 type AnyMovie =
   | (MovieSummaryDto & Partial<MovieDto>)
   | {
@@ -35,7 +34,10 @@ export class MovieCardComponent implements OnChanges {
   @Input() yearOnly = true;
 
   private readonly IMG_BASE = 'https://image.tmdb.org/t/p/w500';
-  constructor(private favs: FavoritesService) {}
+  constructor(
+    private favs: FavoritesService,
+    private watch: WatchlistService
+  ) {}
 
   get title(): string { return (this.movie as any).title ?? '—'; }
 
@@ -70,12 +72,17 @@ export class MovieCardComponent implements OnChanges {
   private movieId$ = new BehaviorSubject<number | null>(null);
   private refresh$ = new BehaviorSubject<void>(undefined);
 
-  isFav$ = combineLatest([
-    this.movieId$,
-    this.refresh$.pipe(startWith(undefined)),
-  ]).pipe(
+  isFav$ = combineLatest([this.movieId$, this.refresh$.pipe(startWith(undefined))]).pipe(
     switchMap(([id]) =>
-      this.favs.list$('movie').pipe(
+      this.favs.list$('movie' as MediaType).pipe(
+        map(list => !!id && list.some(x => x.tmdbId === id))
+      )
+    )
+  );
+
+  isWatch$ = combineLatest([this.movieId$, this.refresh$.pipe(startWith(undefined))]).pipe(
+    switchMap(([id]) =>
+      this.watch.list$('movie' as MediaType).pipe(
         map(list => !!id && list.some(x => x.tmdbId === id))
       )
     )
@@ -95,12 +102,37 @@ export class MovieCardComponent implements OnChanges {
 
     this.isFav$.pipe(take(1)).subscribe(current => {
       const action$ = current
-        ? this.favs.remove$('movie', id)
-        : this.favs.add$('movie', id);
+        ? this.favs.remove$('movie' as MediaType, id)
+        : this.favs.add$('movie' as MediaType, id);
 
       action$.subscribe({
         next: () => this.refresh$.next(),
         error: () => this.refresh$.next(),
+      });
+    });
+  }
+
+  toggleWatch(ev: MouseEvent) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const id = this.movieId$.value;
+    if (!id) return;
+
+    this.isWatch$.pipe(take(1)).subscribe(current => {
+      const action$ = current
+        ? this.watch.remove$('movie' as MediaType, id)
+        : this.watch.add$('movie' as MediaType, id);
+
+      action$.subscribe({
+        next: () => {
+          this.refresh$.next();
+          document.dispatchEvent(new CustomEvent('watchlist:changed'));
+        },
+        error: () => {
+          this.refresh$.next();
+          document.dispatchEvent(new CustomEvent('watchlist:changed'));
+        },
       });
     });
   }

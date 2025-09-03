@@ -1,0 +1,41 @@
+<section class="wrap">
+  <header class="section-head">
+    <div class="lhs">
+      <h2>My Watchlist</h2>
+      <p class="hint">Movies you saved to watch later.</p>
+    </div>
+  </header>
+
+  <ng-container *ngIf="vm$ | async as vm; else loading">
+    <ng-container *ngIf="vm.items.length; else empty">
+      <div class="grid" role="list">
+        <app-movie-card
+          *ngFor="let m of vm.items; trackBy: trackById"
+          [movie]="m"
+          role="listitem">
+        </app-movie-card>
+      </div>
+
+      <mat-paginator
+        [length]="vm.totalResults"
+        [pageSize]="20"
+        [pageIndex]="vm.page - 1"
+        [pageSizeOptions]="[20]"
+        (page)="onPage($event)">
+      </mat-paginator>
+    </ng-container>
+  </ng-container>
+
+  <ng-template #loading>
+    <div class="loading">
+      <mat-progress-spinner mode="indeterminate" diameter="46"></mat-progress-spinner>
+      <span>Loading your watchlist…</span>
+    </div>
+  </ng-template>
+
+  <ng-template #empty>
+    <div class="empty">
+      <p>Your watchlist is empty. Click the eye icon on any movie to add it.</p>
+    </div>
+  </ng-template>
+</section>
