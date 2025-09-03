@@ -41,7 +41,7 @@ export const discoverMovies = async (req: Request, res: Response) => {
   try {
     const page = Number(req.query.page ?? 1);
     const sort_by = String(req.query.sort_by ?? 'popularity.desc');
-    const with_genres = typeof req.query.with_genres === 'string' ? req.query.with_genres : undefined; // comma-separated TMDB genre ids
+    const with_genres = typeof req.query.with_genres === 'string' ? req.query.with_genres : undefined;
     const year = req.query.year ? Number(req.query.year) : undefined;
 
     const key = `movies:discover:${page}:${sort_by}:${with_genres ?? ''}:${year ?? ''}`;
@@ -53,5 +53,28 @@ export const discoverMovies = async (req: Request, res: Response) => {
     res.json(data);
   } catch (err: any) {
     res.status(err?.response?.status || 500).json({ error: err?.message || 'Failed to discover' });
+  }
+};
+
+export const searchMovies = async (req: Request, res: Response) => {
+  try {
+    const q = String(req.query.q ?? '').trim();
+    if (!q) return res.status(400).json({ error: 'Missing q' });
+    const page = Number(req.query.page ?? 1);
+
+    const key = `movies:search:${q.toLowerCase()}:${page}`;
+    const cached = await redis.get(key);
+    if (cached) return res.json(JSON.parse(cached));
+
+    const { data } = await tmdbGet('/search/movie', {
+      query: q,
+      page,
+      include_adult: false,
+    });
+
+    await redis.set(key, JSON.stringify(data), 'EX', TEN_MIN);
+    res.json(data);
+  } catch (err: any) {
+    res.status(err?.response?.status || 500).json({ error: err?.message || 'Failed to search' });
   }
 };

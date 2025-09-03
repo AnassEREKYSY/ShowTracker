@@ -1,4 +1,4 @@
-<mat-toolbar class="nav">
+<mat-toolbar class="nav" (keydown.escape)="closePanel()">
   <button mat-icon-button class="menu-btn" (click)="menu.emit()" aria-label="Open menu">
     <mat-icon>menu</mat-icon>
   </button>
@@ -16,12 +16,91 @@
     <ng-template #letter><div class="avatar">{{ userLetter }}</div></ng-template>
   </button>
 
-  <form class="search" (ngSubmit)="submit()">
+  <form
+    class="search"
+    cdkOverlayOrigin
+    #origin="cdkOverlayOrigin"
+    (submit)="submit(); $event.preventDefault()">
     <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field">
       <mat-icon matPrefix>search</mat-icon>
-      <input matInput [formControl]="search" placeholder="Search everything" />
+      <input
+        matInput
+        type="search"
+        [formControl]="search"
+        placeholder="Search movies"
+        (focus)="open = (search.value ?? '').trim().length > 0" />
+      <button mat-icon-button matSuffix type="submit" aria-label="Search">
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
     </mat-form-field>
   </form>
+
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="origin"
+    [cdkConnectedOverlayOpen]="open"
+    [cdkConnectedOverlayPositions]="positions"
+    cdkConnectedOverlayHasBackdrop
+    cdkConnectedOverlayBackdropClass="search-backdrop"
+    cdkConnectedOverlayPanelClass="search-overlay-panel"
+    (backdropClick)="closePanel()"
+    (detach)="closePanel()">
+    <div class="search-panel" (mousedown)="$event.preventDefault()">
+      <div class="panel-inner">
+        <div class="loading" *ngIf="isLoading">
+          <mat-progress-spinner diameter="22" mode="indeterminate"></mat-progress-spinner>
+          <span>Searching…</span>
+        </div>
+
+        <div *ngIf="!isLoading && results.length === 0" class="empty">
+          <span>Type at least 2 characters to search.</span>
+        </div>
+
+        <ul *ngIf="!isLoading && results.length > 0" class="list" role="listbox">
+          <li
+            *ngFor="let m of results; trackBy: trackById"
+            class="row"
+            role="option"
+            (click)="goToDetails(m.id)">
+            <img class="thumb"
+                 [src]="m.posterPath ? 'https://image.tmdb.org/t/p/w92' + m.posterPath : '/assets/no-poster.svg'"
+                 [alt]="m.title" />
+
+            <div class="meta">
+              <div class="title" [title]="m.title">{{ m.title }}</div>
+              <div class="sub">
+                <span *ngIf="m.releaseDate as rd">{{ rd | date:'y' }}</span>
+                <span class="dot" *ngIf="m.voteAverage !== undefined">•</span>
+                <span *ngIf="m.voteAverage !== undefined">
+                  <mat-icon class="star">star</mat-icon>{{ m.voteAverage | number:'1.1-1' }}
+                </span>
+              </div>
+            </div>
+
+            <div class="actions" (click)="$event.stopPropagation()">
+              <button
+                mat-icon-button
+                class="action"
+                [class.active]="favSet.has(m.id)"
+                (click)="toggleFavorite(m.id, favSet.has(m.id), $event)"
+                aria-label="Toggle favorite">
+                <mat-icon>{{ favSet.has(m.id) ? 'favorite' : 'favorite_border' }}</mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                class="action"
+                [class.active]="watchSet.has(m.id)"
+                (click)="toggleWatchlist(m.id, watchSet.has(m.id), $event)"
+                aria-label="Toggle watchlist">
+                <mat-icon>{{ watchSet.has(m.id) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </ng-template>
 
   <mat-menu #userMenu="matMenu" xPosition="before">
     <button mat-menu-item routerLink="/profile"><mat-icon>person</mat-icon><span>Profile</span></button>

@@ -12,7 +12,6 @@ export interface DiscoverQueryDto {
 }
 
 @Injectable({ providedIn: 'root' })
-
 export class MoviesApiService {
   private base = `${environment.apiBaseUrl}/movies`;
 
@@ -33,7 +32,11 @@ export class MoviesApiService {
     if (q.sort_by) params = params.set('sort_by', q.sort_by);
     if (q.with_genres) params = params.set('with_genres', q.with_genres);
     if (typeof q.year === 'number') params = params.set('year', String(q.year));
-
     return this.http.get<PagedDto<MovieSummaryDto>>(`${this.base}/discover`, { params });
+  }
+
+  search$(q: string, page = 1): Observable<PagedDto<MovieSummaryDto>> {
+    let params = new HttpParams().set('q', q).set('page', String(page));
+    return this.http.get<PagedDto<MovieSummaryDto>>(`${this.base}/search`, { params });
   }
 }

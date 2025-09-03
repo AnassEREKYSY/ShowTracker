@@ -16,6 +16,7 @@ export class MoviesService {
   private movieCache = new Map<number, Observable<Movie>>();
   private popularCache = new Map<number, Observable<Paged<MovieSummary>>>();
   private discoverCache = new Map<string, Observable<Paged<MovieSummary>>>();
+  private searchCache = new Map<string, Observable<Paged<MovieSummary>>>(); // NEW
 
   constructor(private api: MoviesApiService) {}
 
@@ -60,6 +61,19 @@ export class MoviesService {
       shareReplay(1)
     );
     this.discoverCache.set(key, obs);
+    return obs;
+  }
+
+  search$(query: string, page = 1): Observable<Paged<MovieSummary>> {
+    const key = `${query}::${page}`;
+    const existing = this.searchCache.get(key);
+    if (existing) return existing;
+
+    const obs = this.api.search$(query, page).pipe(
+      map(dto => mapPaged(dto, mapMovieSummary)),
+      shareReplay(1)
+    );
+    this.searchCache.set(key, obs);
     return obs;
   }
 }
