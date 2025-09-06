@@ -5,13 +5,13 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field appearance="outline" class="w-100">
-        <input matInput type="email" placeholder="Email" formControlName="email" autocomplete="email" />
+        <input matInput data-testid="reg-email" type="email" placeholder="Email" formControlName="email" autocomplete="email"/>
         <mat-error *ngIf="form.controls.email.hasError('required')">Email is required.</mat-error>
         <mat-error *ngIf="form.controls.email.hasError('email')">Enter a valid email.</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-100">
-        <input matInput [type]="hide ? 'password' : 'text'" placeholder="Password" formControlName="password" autocomplete="new-password" />
+        <input matInput data-testid="reg-password" [type]="hide ? 'password' : 'text'" placeholder="Password" formControlName="password" autocomplete="new-password" />
         <button type="button" mat-icon-button matSuffix (click)="hide = !hide" aria-label="Toggle password">
           <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
@@ -20,7 +20,7 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-100">
-        <input matInput [type]="hide2 ? 'password' : 'text'" placeholder="Confirm password" formControlName="confirm" autocomplete="new-password" />
+        <input matInput data-testid="reg-confirm" [type]="hide2 ? 'password' : 'text'" placeholder="Confirm password" formControlName="confirm" autocomplete="new-password" />
         <button type="button" mat-icon-button matSuffix (click)="hide2 = !hide2" aria-label="Toggle password">
           <mat-icon>{{ hide2 ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>

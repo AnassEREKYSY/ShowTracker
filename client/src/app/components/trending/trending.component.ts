@@ -2,11 +2,8 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BehaviorSubject, Subject, combineLatest, of } from 'rxjs';
 import { catchError, map, shareReplay, startWith, switchMap } from 'rxjs/operators';
-
 import { TrendingService } from '../../core/services/client-layer/trending.service';
 import { MovieCardComponent } from '../movie-card/movie-card.component';
-
-// Material
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,12 +17,10 @@ type CardMovie = { id: number; title?: string; posterPath?: string | null };
   standalone: true,
   imports: [
     CommonModule,
-    // Material
     MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
     MatSelectModule,
-    // Card
     MovieCardComponent
   ],
   templateUrl: './trending.component.html',
@@ -33,7 +28,6 @@ type CardMovie = { id: number; title?: string; posterPath?: string | null };
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TrendingComponent {
-  // public so template can bind: [value]="(tw$ | async)"
   tw$ = new BehaviorSubject<TimeWindow>('day');
   private limit$ = new BehaviorSubject<number>(20);
   private refresh$ = new Subject<void>();
@@ -45,7 +39,6 @@ export class TrendingComponent {
   ]).pipe(
     switchMap(([tw, limit]) =>
       this.trending.get$('movie', tw, limit).pipe(
-        // if API has no data yet or error → empty array to keep UI alive
         catchError(() => of([]))
       )
     ),
