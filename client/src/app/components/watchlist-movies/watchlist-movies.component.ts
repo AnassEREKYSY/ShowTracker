@@ -1,10 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnDestroy, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subject, combineLatest, fromEvent } from 'rxjs';
-import { distinctUntilChanged, map, shareReplay, startWith, switchMap, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subject, combineLatest, fromEvent, merge, of } from 'rxjs';
+import { distinctUntilChanged, map, shareReplay, startWith, switchMap } from 'rxjs/operators';
 import { WatchlistService } from '../../core/services/client-layer/watchlist.service';
 import { MovieCardComponent } from '../../components/movie-card/movie-card.component';
 
@@ -19,20 +19,27 @@ import { MovieCardComponent } from '../../components/movie-card/movie-card.compo
 export class WatchlistMoviesComponent implements OnDestroy {
   readonly pageSize = 20;
   private destroy$ = new Subject<void>();
+  private platformId = inject(PLATFORM_ID);
+  private doc = inject(DOCUMENT);
+
   private page$ = this.route.queryParamMap.pipe(
     map(pm => Number(pm.get('page') ?? 1)),
     map(p => (Number.isNaN(p) || p < 1 ? 1 : p)),
     distinctUntilChanged()
   );
 
-  private changed$ = fromEvent<CustomEvent>(document, 'watchlist:changed').pipe(startWith(null));
+  private changed$ = isPlatformBrowser(this.platformId)
+    ? merge(of(null), fromEvent<CustomEvent>(this.doc, 'watchlist:changed'))
+    : of(null);
+
   private refresh$ = new BehaviorSubject<void>(undefined);
 
   vm$ = combineLatest([this.page$, this.changed$, this.refresh$]).pipe(
     switchMap(([page]) =>
-      this.watch.listHydrated$('movie').pipe(
-        map(resp => ({ page, items: resp.items ?? [] as any[] }))
-      )
+      (isPlatformBrowser(this.platformId)
+        ? this.watch.listHydrated$('movie')
+        : of({ items: [] })
+      ).pipe(map(resp => ({ page, items: resp.items ?? [] as any[] })))
     ),
     map(({ page, items }) => {
       const total = items.length;
@@ -64,7 +71,9 @@ export class WatchlistMoviesComponent implements OnDestroy {
       queryParams: { page: next },
       queryParamsHandling: 'merge',
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isPlatformBrowser(this.platformId)) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   trackById = (_: number, m: any) => m?.id;
