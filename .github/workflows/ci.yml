@@ -71,7 +71,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          for p in client/client client frontend web app; do
+          for p in client client/client frontend web app; do
             if [ -f "$p/package.json" ]; then
               echo "dir=$p" >> "$GITHUB_OUTPUT"
               echo "Detected client dir: $p"
@@ -180,7 +180,10 @@ jobs:
           file: ./Dockerfile
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE }}:sha-${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE }}:latest
+            ghcr.io/${{ env.IMAGE }}:sha-${{ github.sha }}
+            ghcr.io/${{ env.IMAGE }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            CLIENT_DIR=${{ steps.detect_client.outputs.dir }}
+            SERVER_DIR=server

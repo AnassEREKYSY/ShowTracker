@@ -28,7 +28,12 @@ services:
       retries: 10
 
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        CLIENT_DIR: client
+        SERVER_DIR: server
     container_name: showtracker_app
     env_file:
       - ./server/.env
