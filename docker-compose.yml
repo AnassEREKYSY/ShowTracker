@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:16-alpine
@@ -27,21 +29,11 @@ services:
       timeout: 5s
       retries: 10
 
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        CLIENT_DIR: client
-        SERVER_DIR: server
-    container_name: showtracker_app
+  api:
+    build: ./server
+    container_name: mse_api
     env_file:
       - ./server/.env
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/movies?schema=public
-      REDIS_URL: redis://redis:6379
-      CORS_ORIGIN: http://localhost:4000
-      NODE_ENV: production
     ports:
       - "4000:4000"
     depends_on:
@@ -49,11 +41,14 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/api/health || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
+
+  client:
+    build: ./client
+    container_name: mse_client
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
 
 volumes:
   pgdata:

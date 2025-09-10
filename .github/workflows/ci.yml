@@ -55,23 +55,25 @@ jobs:
           retention-days: 14
 
   e2e-and-push:
-    name: Playwright E2E • Dockerize • Push Image
+    name: Playwright E2E • Dockerize • Push Images
     runs-on: ubuntu-latest
     needs: build-and-test-api
     steps:
       - uses: actions/checkout@v4
 
-      - name: Compute lowercase image name
+      - name: Compute lowercase image names
         run: |
           owner_lc="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
-          echo "IMAGE=${owner_lc}/showtracker" >> "$GITHUB_ENV"
+          echo "OWNER_LC=$owner_lc" >> "$GITHUB_ENV"
+          echo "API_IMAGE=$owner_lc/mse-api" >> "$GITHUB_ENV"
+          echo "CLIENT_IMAGE=$owner_lc/mse-client" >> "$GITHUB_ENV"
 
       - name: Detect client directory
         id: detect_client
         shell: bash
         run: |
           set -e
-          for p in client client/client frontend web app; do
+          for p in client/client client frontend web app; do
             if [ -f "$p/package.json" ]; then
               echo "dir=$p" >> "$GITHUB_OUTPUT"
               echo "Detected client dir: $p"
@@ -91,16 +93,20 @@ jobs:
             server/package-lock.json
             ${{ steps.detect_client.outputs.dir }}/package-lock.json
 
+      - name: Pre-create env path for teardown
+        run: mkdir -p server && touch server/.env
+
       - name: Install deps (client)
         working-directory: ${{ steps.detect_client.outputs.dir }}
         run: npm ci
 
+      - name: Build client (Angular)
+        working-directory: ${{ steps.detect_client.outputs.dir }}
+        run: npm run build
+
       - name: Install Playwright browsers
         working-directory: ${{ steps.detect_client.outputs.dir }}
         run: npx playwright install --with-deps
-
-      - name: Pre-create env path for teardown
-        run: mkdir -p server && touch server/.env
 
       - name: Create server .env for compose (CI)
         run: |
@@ -111,7 +117,7 @@ jobs:
           REDIS_URL=redis://redis:6379
           TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
           TMDB_ACCESS_TOKEN=${{ secrets.TMDB_ACCESS_TOKEN }}
-          CORS_ORIGIN=http://localhost:4000
+          CORS_ORIGIN=http://localhost:8080
           JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
           JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
           ACCESS_TOKEN_TTL=15m
@@ -120,27 +126,38 @@ jobs:
           COOKIE_DOMAIN=localhost
           EOF
 
-      - name: Start docker-compose (db, redis, app)
+      - name: Start docker-compose (db, redis, api)
         run: |
-          docker compose -f docker-compose.yml up -d --build db redis app
+          docker compose -f docker-compose.yml up -d --build db redis api
           echo "Waiting for API on :4000..."
+          ready=""
           for i in {1..60}; do
-            if curl -sS http://localhost:4000/api/health >/dev/null 2>&1; then
+            # success if the server responds at all (even 404)
+            if curl -sS http://localhost:4000/health >/dev/null 2>&1 || \
+               curl -sS http://localhost:4000 >/dev/null 2>&1; then
               echo "API responded (ready)."
-              exit 0
+              ready="yes"
+              break
             fi
             sleep 2
           done
-          echo "API did not become healthy in time"
-          docker compose -f docker-compose.yml ps
-          docker compose -f docker-compose.yml logs app || true
-          exit 1
+          if [ -z "$ready" ]; then
+            echo "API did not become healthy in time"
+            docker compose -f docker-compose.yml ps
+            docker compose -f docker-compose.yml logs api || true
+            exit 1
+          fi
+
+      - name: Apply Prisma migrations in API container
+        run: |
+          docker compose -f docker-compose.yml exec -T api npx prisma migrate deploy \
+            || docker compose -f docker-compose.yml exec -T api npm run db:push
 
       - name: Run Playwright tests
         working-directory: ${{ steps.detect_client.outputs.dir }}
         env:
           CI: 'true'
-        run: npm run e2e -- --reporter=html --base-url=http://localhost:4000
+        run: npm run e2e -- --reporter=html
 
       - name: Upload Playwright report (artifact)
         if: always()
@@ -161,7 +178,7 @@ jobs:
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -172,18 +189,28 @@ jobs:
           install: true
           driver: docker-container
 
-      - name: Build & Push ShowTracker image
+      - name: Build & Push API image
         uses: docker/build-push-action@v6
         with:
           builder: ${{ steps.buildx.outputs.name }}
-          context: .
-          file: ./Dockerfile
+          context: ./server
+          file: ./server/Dockerfile
           push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           tags: |
-            ghcr.io/${{ env.IMAGE }}:sha-${{ github.sha }}
-            ghcr.io/${{ env.IMAGE }}:latest
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:sha-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.API_IMAGE }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            CLIENT_DIR=${{ steps.detect_client.outputs.dir }}
-            SERVER_DIR=server
+
+      - name: Build & Push Client image
+        uses: docker/build-push-action@v6
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: ./client
+          file: ./client/Dockerfile
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.CLIENT_IMAGE }}:sha-${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.CLIENT_IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
