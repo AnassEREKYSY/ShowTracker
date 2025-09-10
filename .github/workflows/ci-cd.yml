@@ -137,6 +137,11 @@ jobs:
           envs: REGISTRY,API_IMAGE,CLIENT_IMAGE,TMDB_API_KEY,TMDB_ACCESS_TOKEN,JWT_ACCESS_SECRET,JWT_REFRESH_SECRET,POSTGRES_PASSWORD
           script: |
             set -euo pipefail
+            if ! docker compose version >/dev/null 2>&1; then
+              mkdir -p ~/.docker/cli-plugins
+              curl -fsSL "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
+              chmod +x ~/.docker/cli-plugins/docker-compose
+            fi
             APP_DIR=$HOME/showtracker
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
@@ -194,8 +199,8 @@ jobs:
               db-data:
               redis-data:
             YML
-            docker-compose pull
-            docker-compose up -d
-            docker-compose exec -T api npx prisma migrate deploy || docker-compose exec -T api npm run db:push
+            docker compose pull
+            docker compose up -d
+            docker compose exec -T api npx prisma migrate deploy || docker compose exec -T api npm run db:push
             docker image prune -af || true
             docker container prune -f || true
