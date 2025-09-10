@@ -11,9 +11,6 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  OWNER_LC: ${{ toLower(github.repository_owner) }}
-  API_IMAGE: ${{ toLower(github.repository_owner) }}/mse-api
-  CLIENT_IMAGE: ${{ toLower(github.repository_owner) }}/mse-client
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -64,6 +61,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Compute lowercase image names
+        run: |
+          owner_lc="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "OWNER_LC=$owner_lc" >> "$GITHUB_ENV"
+          echo "API_IMAGE=$owner_lc/mse-api" >> "$GITHUB_ENV"
+          echo "CLIENT_IMAGE=$owner_lc/mse-client" >> "$GITHUB_ENV"
+
       - name: Detect client directory
         id: detect_client
         shell: bash
@@ -71,7 +75,7 @@ jobs:
           set -e
           for p in client/client client frontend web app; do
             if [ -f "$p/package.json" ]; then
-              echo "dir=$p" >> $GITHUB_OUTPUT
+              echo "dir=$p" >> "$GITHUB_OUTPUT"
               echo "Detected client dir: $p"
               exit 0
             fi
