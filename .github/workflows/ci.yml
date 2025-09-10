@@ -55,6 +55,7 @@ jobs:
         with:
           name: server-coverage
           path: server/coverage
+          retention-days: 14
 
   e2e-and-push:
     name: Playwright E2E • Dockerize • Push Images
@@ -72,6 +73,9 @@ jobs:
             server/package-lock.json
             client/client/package-lock.json
 
+      - name: Pre-create env path for teardown
+        run: mkdir -p server && touch server/.env
+
       - name: Install deps (client)
         working-directory: client/client
         run: npm ci
@@ -84,32 +88,48 @@ jobs:
         working-directory: client/client
         run: npx playwright install --with-deps
 
-      - name: Create server .env for compose
+      - name: Create server .env for compose (CI)
         run: |
           cat > server/.env <<'EOF'
           NODE_ENV=production
           PORT=4000
-          DATABASE_URL=postgresql://postgres:postgres@db:5432/movies
+          DATABASE_URL=postgresql://postgres:postgres@db:5432/movies?schema=public
           REDIS_URL=redis://redis:6379
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
           TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
-          # add any other API envs your server needs
+          TMDB_ACCESS_TOKEN=${{ secrets.TMDB_ACCESS_TOKEN }}
+          CORS_ORIGIN=http://localhost:8080
+          JWT_ACCESS_SECRET=${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.JWT_REFRESH_SECRET }}
+          ACCESS_TOKEN_TTL=15m
+          REFRESH_TOKEN_TTL=7d
+          COOKIE_NAME=rt
+          COOKIE_DOMAIN=localhost
           EOF
 
       - name: Start docker-compose (db, redis, api)
         run: |
           docker compose -f docker-compose.yml up -d --build db redis api
           echo "Waiting for API on :4000..."
+          ready=""
           for i in {1..60}; do
             if curl -fsS http://localhost:4000/health || curl -fsS http://localhost:4000; then
-              echo "API is up"; exit 0
+              echo "API is up"
+              ready="yes"
+              break
             fi
             sleep 2
           done
-          echo "API did not become healthy in time" >&2
-          docker compose -f docker-compose.yml ps
-          docker compose -f docker-compose.yml logs api
-          exit 1
+          if [ -z "$ready" ]; then
+            echo "API did not become healthy in time"
+            docker compose -f docker-compose.yml ps
+            docker compose -f docker-compose.yml logs api || true
+            exit 1
+          fi
+
+      - name: Apply Prisma migrations in API container
+        run: |
+          docker compose -f docker-compose.yml exec -T api npx prisma migrate deploy \
+            || docker compose -f docker-compose.yml exec -T api npm run db:push
 
       - name: Run Playwright tests
         working-directory: client/client
@@ -123,11 +143,15 @@ jobs:
         with:
           name: playwright-report
           path: client/client/playwright-report
-          retention-days: 7
+          retention-days: 14
+
+      - name: Ensure env file exists for teardown
+        if: always()
+        run: mkdir -p server && touch server/.env
 
       - name: Tear down docker-compose
         if: always()
-        run: docker compose -f docker-compose.yml down -v
+        run: docker compose -f docker-compose.yml down -v || true
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
