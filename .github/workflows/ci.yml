@@ -65,8 +65,8 @@ jobs:
         run: |
           owner_lc="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
           echo "OWNER_LC=$owner_lc" >> "$GITHUB_ENV"
-          echo "API_IMAGE=$owner_lc/mse-api" >> "$GITHUB_ENV"
-          echo "CLIENT_IMAGE=$owner_lc/mse-client" >> "$GITHUB_ENV"
+          echo "API_IMAGE=$owner_lc/showtracker-api" >> "$GITHUB_ENV"
+          echo "CLIENT_IMAGE=$owner_lc/showtracker-client" >> "$GITHUB_ENV"
 
       - name: Detect client directory
         id: detect_client
@@ -214,3 +214,111 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.CLIENT_IMAGE }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy-to-ovh:
+    name: Deploy to OVH (docker-compose)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: e2e-and-push
+
+    steps:
+      - name: Compute lowercase image names
+        run: |
+          owner_lc="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "OWNER_LC=$owner_lc" >> "$GITHUB_ENV"
+          echo "REGISTRY=ghcr.io" >> "$GITHUB_ENV"
+          echo "API_IMAGE=$owner_lc/showtracker-api" >> "$GITHUB_ENV"
+          echo "CLIENT_IMAGE=$owner_lc/showtracker-client" >> "$GITHUB_ENV"
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: ${{ secrets.OVH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: REGISTRY,API_IMAGE,CLIENT_IMAGE,TMDB_API_KEY,TMDB_ACCESS_TOKEN,JWT_ACCESS_SECRET,JWT_REFRESH_SECRET,COOKIE_DOMAIN,POSTGRES_PASSWORD
+          script: |
+            set -euo pipefail
+            APP_DIR=/opt/showtracker
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            # Login to GHCR (token must have read:packages)
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login $REGISTRY -u "${{ github.actor }}" --password-stdin
+
+            # Write production .env for API
+            cat > .env <<'EOF'
+            NODE_ENV=production
+            PORT=4000
+            DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/movies?schema=public
+            REDIS_URL=redis://redis:6379
+            TMDB_API_KEY=${TMDB_API_KEY}
+            TMDB_ACCESS_TOKEN=${TMDB_ACCESS_TOKEN}
+            # If you serve client at https://your-domain, set CORS_ORIGIN to that exact origin
+            # If you use the SPA's /api proxy (recommended), you can leave it empty.
+            CORS_ORIGIN=
+            JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+            JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+            ACCESS_TOKEN_TTL=15m
+            REFRESH_TOKEN_TTL=7d
+            COOKIE_NAME=rt
+            COOKIE_DOMAIN=${COOKIE_DOMAIN}
+            EOF
+
+            # Write docker-compose.yml (db + redis + api + client)
+            cat > docker-compose.yml <<'YML'
+            version: "3.9"
+            services:
+              db:
+                image: postgres:16-alpine
+                container_name: showtracker-db
+                environment:
+                  POSTGRES_USER: postgres
+                  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+                  POSTGRES_DB: movies
+                volumes:
+                  - db-data:/var/lib/postgresql/data
+                restart: unless-stopped
+
+              redis:
+                image: redis:7-alpine
+                container_name: showtracker-redis
+                command: ["redis-server","--appendonly","yes"]
+                volumes:
+                  - redis-data:/data
+                restart: unless-stopped
+
+              api:
+                image: ${REGISTRY}/${API_IMAGE}:latest
+                container_name: showtracker-api
+                env_file: .env
+                depends_on:
+                  - db
+                  - redis
+                ports:
+                  - "4000:4000"
+                restart: unless-stopped
+
+              client:
+                image: ${REGISTRY}/${CLIENT_IMAGE}:latest
+                container_name: showtracker-client
+                # Your nginx in the client image should already proxy /api -> http://api:4000
+                depends_on:
+                  - api
+                ports:
+                  - "8080:80"   # Visit http://<ovh-ip>:8080
+                restart: unless-stopped
+
+            volumes:
+              db-data:
+              redis-data:
+            YML
+
+            # Pull, run and migrate
+            docker compose pull
+            docker compose up -d
+            docker compose exec -T api npx prisma migrate deploy || docker compose exec -T api npm run db:push
+
+            # Optional cleanup (safe to ignore failures)
+            docker image prune -af || true
+            docker container prune -f || true
