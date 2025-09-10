@@ -11,9 +11,9 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_OWNER: ${{ github.repository_owner }}
-  API_IMAGE: ${{ github.repository_owner }}/mse-api
-  CLIENT_IMAGE: ${{ github.repository_owner }}/mse-client
+  OWNER_LC: ${{ toLower(github.repository_owner) }}
+  API_IMAGE: ${{ toLower(github.repository_owner) }}/mse-api
+  CLIENT_IMAGE: ${{ toLower(github.repository_owner) }}/mse-client
 
 concurrency:
   group: ci-${{ github.ref }}
