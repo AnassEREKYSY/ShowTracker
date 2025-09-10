@@ -132,7 +132,6 @@ jobs:
           echo "Waiting for API on :4000..."
           ready=""
           for i in {1..60}; do
-            # success if the server responds at all (even 404)
             if curl -sS http://localhost:4000/health >/dev/null 2>&1 || \
                curl -sS http://localhost:4000 >/dev/null 2>&1; then
               echo "API responded (ready)."
@@ -236,17 +235,15 @@ jobs:
           host: ${{ secrets.OVH_HOST }}
           username: ${{ secrets.OVH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,API_IMAGE,CLIENT_IMAGE,TMDB_API_KEY,TMDB_ACCESS_TOKEN,JWT_ACCESS_SECRET,JWT_REFRESH_SECRET,COOKIE_DOMAIN,POSTGRES_PASSWORD
+          envs: REGISTRY,API_IMAGE,CLIENT_IMAGE,TMDB_API_KEY,TMDB_ACCESS_TOKEN,JWT_ACCESS_SECRET,JWT_REFRESH_SECRET,POSTGRES_PASSWORD
           script: |
             set -euo pipefail
             APP_DIR=/opt/showtracker
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
-            # Login to GHCR (token must have read:packages)
             echo "${{ secrets.GHCR_TOKEN }}" | docker login $REGISTRY -u "${{ github.actor }}" --password-stdin
 
-            # Write production .env for API
             cat > .env <<'EOF'
             NODE_ENV=production
             PORT=4000
@@ -254,18 +251,15 @@ jobs:
             REDIS_URL=redis://redis:6379
             TMDB_API_KEY=${TMDB_API_KEY}
             TMDB_ACCESS_TOKEN=${TMDB_ACCESS_TOKEN}
-            # If you serve client at https://your-domain, set CORS_ORIGIN to that exact origin
-            # If you use the SPA's /api proxy (recommended), you can leave it empty.
             CORS_ORIGIN=
             JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
             JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
             ACCESS_TOKEN_TTL=15m
             REFRESH_TOKEN_TTL=7d
             COOKIE_NAME=rt
-            COOKIE_DOMAIN=${COOKIE_DOMAIN}
+            COOKIE_DOMAIN=
             EOF
 
-            # Write docker-compose.yml (db + redis + api + client)
             cat > docker-compose.yml <<'YML'
             version: "3.9"
             services:
@@ -302,11 +296,10 @@ jobs:
               client:
                 image: ${REGISTRY}/${CLIENT_IMAGE}:latest
                 container_name: showtracker-client
-                # Your nginx in the client image should already proxy /api -> http://api:4000
                 depends_on:
                   - api
                 ports:
-                  - "8080:80"   # Visit http://<ovh-ip>:8080
+                  - "8080:80"
                 restart: unless-stopped
 
             volumes:
@@ -314,11 +307,9 @@ jobs:
               redis-data:
             YML
 
-            # Pull, run and migrate
             docker compose pull
             docker compose up -d
             docker compose exec -T api npx prisma migrate deploy || docker compose exec -T api npm run db:push
 
-            # Optional cleanup (safe to ignore failures)
             docker image prune -af || true
             docker container prune -f || true
