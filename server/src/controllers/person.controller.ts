@@ -44,10 +44,14 @@ async function upsertActorAndLinks(person: any) {
   const movies = cast.filter(c => c.media_type === 'movie' && c.id);
   const tvs    = cast.filter(c => c.media_type === 'tv' && c.id);
 
-  await prisma.$transaction([
-    ...movies.map(c => upsertMovieAndLink(c, actor.id)),
-    ...tvs.map(c => upsertTvAndLink(c, actor.id)),
-  ]);
+  await prisma.$transaction(async (tx) => {
+    for (const movie of movies) {
+      await upsertMovieAndLink(movie, actor.id);
+    }
+    for (const tv of tvs) {
+      await upsertTvAndLink(tv, actor.id);
+    }
+  });
 }
 
 function upsertMovieAndLink(credit: any, actorId: string) {
