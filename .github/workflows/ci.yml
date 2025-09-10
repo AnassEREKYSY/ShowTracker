@@ -64,6 +64,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Detect client directory
+        id: detect_client
+        shell: bash
+        run: |
+          set -e
+          for p in client/client client frontend web app; do
+            if [ -f "$p/package.json" ]; then
+              echo "dir=$p" >> $GITHUB_OUTPUT
+              echo "Detected client dir: $p"
+              exit 0
+            fi
+          done
+          echo "Could not find client package.json in known locations." >&2
+          ls -la
+          exit 1
+
       - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
@@ -71,21 +87,21 @@ jobs:
           cache: npm
           cache-dependency-path: |
             server/package-lock.json
-            client/client/package-lock.json
+            ${{ steps.detect_client.outputs.dir }}/package-lock.json
 
       - name: Pre-create env path for teardown
         run: mkdir -p server && touch server/.env
 
       - name: Install deps (client)
-        working-directory: client/client
+        working-directory: ${{ steps.detect_client.outputs.dir }}
         run: npm ci
 
       - name: Build client (Angular)
-        working-directory: client/client
+        working-directory: ${{ steps.detect_client.outputs.dir }}
         run: npm run build
 
       - name: Install Playwright browsers
-        working-directory: client/client
+        working-directory: ${{ steps.detect_client.outputs.dir }}
         run: npx playwright install --with-deps
 
       - name: Create server .env for compose (CI)
@@ -132,7 +148,7 @@ jobs:
             || docker compose -f docker-compose.yml exec -T api npm run db:push
 
       - name: Run Playwright tests
-        working-directory: client/client
+        working-directory: ${{ steps.detect_client.outputs.dir }}
         env:
           CI: 'true'
         run: npm run e2e -- --reporter=html
@@ -142,7 +158,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: client/client/playwright-report
+          path: ${{ steps.detect_client.outputs.dir }}/playwright-report
           retention-days: 14
 
       - name: Ensure env file exists for teardown
