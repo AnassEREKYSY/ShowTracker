@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +10,30 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthStateService } from '../../core/services/client-layer/auth-state.service';
 
+function passwordMatchValidator(): ValidatorFn {
+  return (group: AbstractControl): ValidationErrors | null => {
+    const password = group.get('password');
+    const confirm = group.get('confirm');
+    if (!password || !confirm) return null;
+
+    const passVal = password.value ?? '';
+    const confVal = confirm.value ?? '';
+
+    const mismatch = !!passVal && !!confVal && passVal !== confVal;
+
+    const current = confirm.errors || {};
+    if (mismatch) {
+      confirm.setErrors({ ...current, passwordMismatch: true });
+      return { passwordMismatch: true };
+    } else {
+      if ('passwordMismatch' in current) {
+        const { passwordMismatch, ...rest } = current;
+        confirm.setErrors(Object.keys(rest).length ? rest : null);
+      }
+      return null;
+    }
+  };
+}
 
 @Component({
   selector: 'app-register',
@@ -34,15 +58,10 @@ export class RegisterComponent {
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirm: ['', [Validators.required]],
-  });
-
-  get passwordMismatch() {
-    const { password, confirm } = this.form.getRawValue();
-    return !!password && !!confirm && password !== confirm;
-  }
+  }, { validators: passwordMatchValidator() });
 
   submit() {
-    if (this.form.invalid || this.passwordMismatch || this.loading) return;
+    if (this.form.invalid || this.loading) return;
     this.loading = true; this.error = null;
 
     const { email, password } = this.form.getRawValue();
