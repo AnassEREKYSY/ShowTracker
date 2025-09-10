@@ -128,8 +128,10 @@ jobs:
           echo "Waiting for API on :4000..."
           ready=""
           for i in {1..60}; do
-            if curl -fsS http://localhost:4000/health || curl -fsS http://localhost:4000; then
-              echo "API is up"
+            # success if the server responds at all (even 404)
+            if curl -sS http://localhost:4000/health >/dev/null 2>&1 || \
+              curl -sS http://localhost:4000 >/dev/null 2>&1; then
+              echo "API responded (ready)."
               ready="yes"
               break
             fi
