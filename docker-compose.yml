@@ -29,26 +29,26 @@ services:
       timeout: 5s
       retries: 10
 
-  # api:
-  #   build: ./server
-  #   container_name: mse_api
-  #   env_file:
-  #     - ./server/.env
-  #   ports:
-  #     - "4000:4000"
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #     redis:
-  #       condition: service_healthy
+  api:
+    build: ./server
+    container_name: mse_api
+    env_file:
+      - ./server/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
-  # client:
-  #   build: ./client
-  #   container_name: mse_client
-  #   ports:
-  #     - "8080:80"
-  #   depends_on:
-  #     - api
+  client:
+    build: ./client
+    container_name: mse_client
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
 
 volumes:
   pgdata:
