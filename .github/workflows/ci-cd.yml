@@ -26,20 +26,14 @@ jobs:
           node-version: '20'
           cache: npm
           cache-dependency-path: server/package-lock.json
-      - run: npm ci
-        working-directory: server
-      - run: npm run prisma:generate
-        working-directory: server
-      - run: npm run build
-        working-directory: server
-      - run: npm run test:cov
+      - run: npm ci && npm run prisma:generate && npm run build && npm run test:cov
         working-directory: server
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: server-coverage
           path: server/coverage
-          retention-days: 14
+          retention-days: 7
 
   build-and-test-client:
     runs-on: ubuntu-latest
@@ -79,7 +73,7 @@ jobs:
         with:
           name: playwright-report
           path: ${{ steps.detect_client.outputs.dir }}/playwright-report
-          retention-days: 14
+          retention-days: 7
 
   dockerize-and-push:
     runs-on: ubuntu-latest
@@ -200,8 +194,8 @@ jobs:
               db-data:
               redis-data:
             YML
-            docker compose pull
-            docker compose up -d
-            docker compose exec -T api npx prisma migrate deploy || docker compose exec -T api npm run db:push
+            docker-compose pull
+            docker-compose up -d
+            docker-compose exec -T api npx prisma migrate deploy || docker-compose exec -T api npm run db:push
             docker image prune -af || true
             docker container prune -f || true
