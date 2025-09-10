@@ -130,11 +130,18 @@ jobs:
           echo "API_IMAGE=$owner_lc/showtracker-api" >> "$GITHUB_ENV"
           echo "CLIENT_IMAGE=$owner_lc/showtracker-client" >> "$GITHUB_ENV"
       - uses: appleboy/ssh-action@v1.0.0
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
         with:
           host: ${{ secrets.OVH_HOST }}
           username: ${{ secrets.OVH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,API_IMAGE,CLIENT_IMAGE,TMDB_API_KEY,TMDB_ACCESS_TOKEN,JWT_ACCESS_SECRET,JWT_REFRESH_SECRET,POSTGRES_PASSWORD
+          envs: REGISTRY,API_IMAGE,CLIENT_IMAGE,GHCR_TOKEN,POSTGRES_PASSWORD,TMDB_API_KEY,TMDB_ACCESS_TOKEN,JWT_ACCESS_SECRET,JWT_REFRESH_SECRET
           script: |
             set -euo pipefail
             if ! docker compose version >/dev/null 2>&1; then
@@ -145,8 +152,8 @@ jobs:
             APP_DIR=$HOME/showtracker
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
-            echo "${{ secrets.GHCR_TOKEN }}" | docker login $REGISTRY -u "${{ github.actor }}" --password-stdin
-            cat > .env <<'EOF'
+            echo "$GHCR_TOKEN" | docker login "$REGISTRY" -u "${{ github.actor }}" --password-stdin
+            cat > .env <<EOF
             NODE_ENV=production
             PORT=4000
             DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/movies?schema=public
@@ -160,9 +167,9 @@ jobs:
             REFRESH_TOKEN_TTL=7d
             COOKIE_NAME=rt
             COOKIE_DOMAIN=
+            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
             EOF
             cat > docker-compose.yml <<'YML'
-            version: "3.9"
             services:
               db:
                 image: postgres:16-alpine
@@ -201,6 +208,8 @@ jobs:
             YML
             docker compose pull
             docker compose up -d
-            docker compose exec -T api npx prisma migrate deploy || docker compose exec -T api npm run db:push
+            docker compose exec -T db sh -lc 'until pg_isready -U postgres -h 127.0.0.1; do sleep 1; done'
+            docker compose exec -T api sh -lc 'npx prisma migrate deploy || npm run db:push'
+
             docker image prune -af || true
             docker container prune -f || true
