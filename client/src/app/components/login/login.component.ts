@@ -29,7 +29,6 @@ export class LoginComponent {
   private route = inject(ActivatedRoute);
 
   hide = true;
-  loading = false;
   error: string | null = null;
 
   form = this.fb.nonNullable.group({
@@ -38,19 +37,19 @@ export class LoginComponent {
   });
 
   submit() {
-    if (this.form.invalid || this.loading) return;
+    if (this.form.invalid) return;
 
-    this.loading = true;
     this.error = null;
 
     const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
 
     this.auth.login$(this.form.getRawValue())
-      .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: () => this.router.navigateByUrl(returnUrl),
         error: (err: HttpErrorResponse) => {
-          this.error = (err.error?.message as string) || 'Login failed. Please check your credentials.';
+          this.error =
+            (err.error && (err.error.message || err.error)) ||
+            'Login failed. Please check your credentials.';
         },
       });
   }

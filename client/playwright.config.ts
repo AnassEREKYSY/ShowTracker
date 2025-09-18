@@ -17,10 +17,11 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'npm run start:csr',
+    command: 'ng serve --port 4200 --host 0.0.0.0 --open=false',
     port: 4200,
     reuseExistingServer: !isCI,
     timeout: 120_000,
+    stdout: 'pipe',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

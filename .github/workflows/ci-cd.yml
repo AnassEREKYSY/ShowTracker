@@ -3,7 +3,6 @@ name: CI • Build, Test, E2E, Dockerize & Push
 on:
   push:
     branches: [ main ]
-  pull_request:
 
 permissions:
   contents: read

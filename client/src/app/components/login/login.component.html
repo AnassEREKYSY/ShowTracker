@@ -5,13 +5,13 @@
 
     <form [formGroup]="form" (ngSubmit)="submit()">
       <mat-form-field appearance="outline" class="w-100">
-        <input matInput type="email" placeholder="Email" formControlName="email" autocomplete="email" />
+        <input matInput type="email" placeholder="Email" formControlName="email" autocomplete="email" id="login" data-testid="email" />
         <mat-error *ngIf="form.controls.email.hasError('required')">Email is required.</mat-error>
         <mat-error *ngIf="form.controls.email.hasError('email')">Enter a valid email.</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-100">
-        <input matInput [type]="hide ? 'password' : 'text'" placeholder="Password" formControlName="password" autocomplete="current-password" />
+        <input matInput [type]="hide ? 'password' : 'text'" placeholder="Password" formControlName="password" autocomplete="current-password" id="login_password" data-testid="password"/>
         <button type="button" mat-icon-button matSuffix (click)="hide = !hide" aria-label="Toggle password">
           <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
@@ -19,9 +19,9 @@
         <mat-error *ngIf="form.controls.password.hasError('minlength')">Minimum 6 characters.</mat-error>
       </mat-form-field>
 
-      <button mat-raised-button color="primary" class="w-100" [disabled]="form.invalid || loading">
-        <span *ngIf="!loading">Sign in</span>
-        <mat-progress-spinner *ngIf="loading" diameter="18" mode="indeterminate"></mat-progress-spinner>
+      <button  type="submit" mat-raised-button color="primary" class="w-100" data-testid="submit">
+        <span>Sign in</span>
+        <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
       </button>
 
       <a class="link subtle" routerLink="/auth/forgot">Forgot your password?</a>
@@ -33,6 +33,6 @@
       <a routerLink="/auth/register" class="link">Create new account</a>
     </p>
 
-    <p *ngIf="error" class="error">{{ error }}</p>
+    <p *ngIf="error" class="error"  data-testid="login-error">{{ error }}</p>
   </div>
 </section>
