@@ -209,7 +209,4 @@ jobs:
             docker compose pull
             docker compose up -d
             docker compose exec -T db sh -lc 'until pg_isready -U postgres -h 127.0.0.1; do sleep 1; done'
-            docker compose exec -T api sh -lc 'npx prisma migrate deploy || npm run db:push'
-
-            docker image prune -af || true
-            docker container prune -f || true
+            docker compose exec -T api sh -lc 'npx prisma db push'
