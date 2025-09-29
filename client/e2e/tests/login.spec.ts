@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test, } from '../fixtures/auth.fixture';
-import { mockLoginFailure, mockLoginSuccess } from '../mocks/api-mocks';
+import { mockLoginFailure, mockLoginSuccess } from '../mocks/login-mocks';
 import { LoginPage } from '../pages/login.page';
 
 test.describe('Login flow', () => {

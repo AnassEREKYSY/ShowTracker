@@ -61,12 +61,12 @@ export class RegisterComponent {
   }, { validators: passwordMatchValidator() });
 
   submit() {
-    if (this.form.invalid || this.loading) return;
+    if (this.form.invalid) return;
     this.loading = true; this.error = null;
 
     const { email, password } = this.form.getRawValue();
     this.auth.register$({ email, password }).subscribe({
-      next: () => this.router.navigateByUrl('/'),
+      next: () => this.router.navigateByUrl(''),
       error: (err: HttpErrorResponse) => {
         this.loading = false;
         this.error = (err.error?.message as string) || 'Registration failed. Please try again.';

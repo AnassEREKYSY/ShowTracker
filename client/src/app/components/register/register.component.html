@@ -3,7 +3,7 @@
     <div class="logo">M</div>
     <h1 class="title">Create account</h1>
 
-    <form [formGroup]="form" (ngSubmit)="submit()">
+    <form [formGroup]="form" (ngSubmit)="submit()" data-testid="reg-form">
       <mat-form-field appearance="outline" class="w-100">
         <input matInput data-testid="reg-email" type="email" placeholder="Email" formControlName="email" autocomplete="email"/>
         <mat-error *ngIf="form.controls.email.hasError('required')">Email is required.</mat-error>
@@ -25,10 +25,10 @@
           <mat-icon>{{ hide2 ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
         <mat-error *ngIf="form.controls.confirm.hasError('required')">Confirmation required.</mat-error>
-        <mat-error *ngIf="form.controls.confirm.hasError('passwordMismatch')">Passwords do not match.</mat-error>
+        <mat-error *ngIf="form.controls.confirm.hasError('passwordMismatch')" data-testid="reg-mismatch">Passwords do not match.</mat-error>
       </mat-form-field>
 
-      <button mat-raised-button color="primary" class="w-100" [disabled]="form.invalid || loading">
+      <button mat-raised-button color="primary" class="w-100" data-testid="reg-submit">
         <span *ngIf="!loading">Create account</span>
         <mat-progress-spinner *ngIf="loading" diameter="18" mode="indeterminate"></mat-progress-spinner>
       </button>
@@ -40,6 +40,6 @@
       <a routerLink="/auth/login" class="link">Sign in</a>
     </p>
 
-    <p *ngIf="error" class="error">{{ error }}</p>
+    <p *ngIf="error" class="error" data-testid="reg-server-error">{{ error }}</p>
   </div>
 </section>
