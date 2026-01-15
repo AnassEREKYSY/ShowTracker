@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiBaseUrl: 'http://localhost:4000/api'
+    apiBaseUrl: 'https://api.showtracker.anasserekysy.com'
 };
