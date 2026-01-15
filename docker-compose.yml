@@ -32,6 +32,9 @@ services:
   api:
     build: ./server
     container_name: mse_api
+    networks:
+      - web
+      - default
     env_file:
       - ./server/.env
     ports:
@@ -45,6 +48,9 @@ services:
   client:
     build: ./client
     container_name: mse_client
+    networks:
+      - web
+      - default
     ports:
       - "8080:80"
     depends_on:
@@ -52,3 +58,7 @@ services:
 
 volumes:
   pgdata:
+
+networks:
+  web:
+    external: true
