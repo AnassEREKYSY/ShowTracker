@@ -56,6 +56,12 @@ yellow "Waiting for http://127.0.0.1:8080/api/health ..."
 for i in $(seq 1 40); do
   if curl -fsS http://127.0.0.1:8080/api/health >/dev/null 2>&1; then
     green "ShowTracker is up (healthy after ~$((i * 5))s)"
+    # Recreated containers get new IPs: make the reverse proxy resolve the names again.
+    if docker inspect "${PROXY_CONTAINER:-reverse-proxy}" >/dev/null 2>&1; then
+      docker exec "${PROXY_CONTAINER:-reverse-proxy}" nginx -t >/dev/null 2>&1 \
+        && docker exec "${PROXY_CONTAINER:-reverse-proxy}" nginx -s reload >/dev/null 2>&1 \
+        && green "Reverse proxy reloaded" || yellow "Could not reload the reverse proxy (check its config)"
+    fi
     $COMPOSE ps
     docker image prune -f >/dev/null || true
     exit 0
