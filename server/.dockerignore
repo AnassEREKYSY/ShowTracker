@@ -1,4 +1,7 @@
 node_modules
+dist
+coverage
+test
+.env
 npm-debug.log
 .DS_Store
-.env

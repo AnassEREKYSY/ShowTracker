@@ -1,14 +1,12 @@
-# Build stage
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --no-audit --no-fund
 COPY . .
-RUN npm run build -- --configuration production
+RUN npx ng build --configuration production
 
-
-# Serve with Nginx and proxy /api → api:4000
-FROM nginx:alpine
+# Static files + /api proxied to the api container
+FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist/client/browser /usr/share/nginx/html
 EXPOSE 80

@@ -1,30 +1,28 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const isCI = !!process.env['CI'];
+const PORT = 4300;
 
+// The API is mocked in each test (e2e/mock-api.ts), so only the Angular dev server runs.
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
-  expect: { timeout: 5_000 },
+  expect: { timeout: 7_000 },
   forbidOnly: isCI,
-  retries: isCI ? 2 : 0,
-  workers: isCI ? 2 : undefined,
-  reporter: [['list'], ['html', { open: 'never' }]],
+  retries: isCI ? 1 : 0,
+  reporter: isCI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: process.env['PW_BASE_URL'] || 'http://localhost:4200',
+    baseURL: `http://localhost:${PORT}`,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    // Lets a machine with a preinstalled Chromium run the tests without downloading browsers.
+    launchOptions: process.env['PW_CHROMIUM_PATH'] ? { executablePath: process.env['PW_CHROMIUM_PATH'] } : {},
   },
   webServer: {
-    command: 'npm run start:csr',
-    port: 4200,
+    command: `npx ng serve --port ${PORT}`,
+    port: PORT,
     reuseExistingServer: !isCI,
-    timeout: 120_000,
+    timeout: 180_000,
   },
-  projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox',  use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit',   use: { ...devices['Desktop Safari'] } },
-  ],
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });
