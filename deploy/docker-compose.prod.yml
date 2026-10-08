@@ -42,7 +42,11 @@ services:
         condition: service_started
     ports:
       - "${API_BIND:-0.0.0.0}:4000:4000"
-    networks: [default, web]
+    # Only on the stack's own network, under a unique name: several stacks on the shared
+    # "web" network have a service called "api", so the bare name would be ambiguous there.
+    networks:
+      default:
+        aliases: [showtracker-api]
 
   client:
     image: ghcr.io/anasserekysy/showtracker-client:${IMAGE_TAG:-latest}
