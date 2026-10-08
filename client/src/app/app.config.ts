@@ -1,21 +1,22 @@
-import { ApplicationConfig, APP_INITIALIZER, inject } from '@angular/core';
-import { provideRouter, withEnabledBlockingInitialNavigation } from '@angular/router';
+import { APP_INITIALIZER, ApplicationConfig, inject } from '@angular/core';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { routes } from './app.routes';
-import { AuthStateService } from './core/services/client-layer/auth-state.service';
-import { authInterceptor } from './core/interceptors/auth.interceptor';
-
-function initAuth() {
-  const auth = inject(AuthStateService);
-  return () => auth.setUserFromMe$().toPromise().catch(() => {});
-}
+import { authInterceptor } from './core/auth.interceptor';
+import { AuthService } from './core/auth.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
-    provideAnimations(),
-    { provide: APP_INITIALIZER, useFactory: initAuth, multi: true }
+    {
+      provide: APP_INITIALIZER,
+      multi: true,
+      useFactory: () => {
+        const auth = inject(AuthService);
+        return () => firstValueFrom(auth.restore());
+      },
+    },
   ],
 };

@@ -30,6 +30,7 @@ model User {
   favorites    Favorite[]
   watchlist    WatchlistItem[]
   searches     SearchHistory[]
+  episodes     EpisodeWatch[]
 }
 
 model Actor {
@@ -141,21 +142,50 @@ model Favorite {
   @@index([userId, createdAt])
 }
 
+// A title in the user's library (the former watchlist, kept as the same table so existing rows survive).
+// status: planned | watching | watched | dropped (null on old rows = planned)
 model WatchlistItem {
-  id         String    @id @default(uuid())
-  userId     String
-  mediaType  MediaType
-  tmdbId     Int
-  title      String?
-  posterPath String?
-  addedAt    DateTime  @default(now())
-  position   Int?
-  plannedAt  DateTime?
-  status     String? // planned|watching|finished (optional)
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid())
+  userId       String
+  mediaType    MediaType
+  tmdbId       Int
+  title        String?
+  posterPath   String?
+  backdropPath String?
+  year         Int?
+  addedAt      DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  position     Int?
+  plannedAt    DateTime?
+  status       String?
+  rating       Int? // 1..10 (shown as 0.5..5 stars)
+  notes        String?
+  startedAt    DateTime?
+  watchedAt    DateTime?
+  runtime      Int? // movie: minutes; tv: average episode minutes
+  totalEpisodes Int? // tv only, aired episodes without specials
+  genres       String[]  @default([])
+  cast         String[]  @default([])
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, mediaType, tmdbId])
   @@index([userId, addedAt])
+  @@index([userId, status])
+}
+
+// One watched episode of a TV show.
+model EpisodeWatch {
+  id         String   @id @default(uuid())
+  userId     String
+  showTmdbId Int
+  season     Int
+  episode    Int
+  runtime    Int?
+  watchedAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, showTmdbId, season, episode])
+  @@index([userId, watchedAt])
 }
 
 model SearchHistory {

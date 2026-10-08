@@ -1,44 +1,83 @@
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
+@import '@fontsource-variable/inter';
 
-:root{
-  --nf-black: #0b0b0b;
-  --nf-card:  #141414;
-  --nf-text:  #e6e6e6;
-  --nf-muted: #b3b3b3;
-  --nf-red:        #c62828;
-  --nf-red-hover:  #b71c1c;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  ShowTracker design tokens (DESIGN.md). Dark and calm: charcoal surfaces,
+  warm off-white text, one amber accent used sparingly.
+*/
+:root {
+  --bg: 17 18 20;            /* #111214 */
+  --surface: 24 25 28;       /* #18191C */
+  --raised: 32 33 37;        /* #202125 */
+  --line: 237 233 227;       /* used at low alpha */
+  --ink: 237 233 227;        /* #EDE9E3 */
+  --ink-muted: 160 155 147;  /* #A09B93 */
+  --ink-faint: 110 107 101;  /* #6E6B65 */
+  --accent: 232 163 61;      /* #E8A33D */
+  --accent-hover: 240 180 92;
+  --accent-ink: 27 20 8;     /* text on amber */
+  --danger: 229 103 90;
+  --success: 107 191 138;
+  color-scheme: dark;
 }
 
-.mat-mdc-raised-button.mat-primary{
-  background: var(--nf-red) !important;
-  color: #fff !important;
+html { background: rgb(var(--bg)); }
+body {
+  @apply bg-bg font-sans text-[15px] leading-6 text-ink antialiased;
+  font-feature-settings: 'cv11', 'ss01';
+  min-height: 100dvh;
 }
-.mat-mdc-raised-button.mat-primary:hover{
-  background: var(--nf-red-hover) !important;
+::selection { background: rgb(var(--accent) / 0.3); }
+:focus-visible { outline: 2px solid rgb(var(--accent)); outline-offset: 2px; border-radius: 6px; }
+img { color: transparent; }
+
+/* Thin, quiet scrollbars */
+* { scrollbar-width: thin; scrollbar-color: rgb(var(--line) / 0.15) transparent; }
+
+@layer components {
+  .page { @apply mx-auto w-full max-w-page px-4 sm:px-6 lg:px-8; }
+  .h1 { @apply text-[28px] font-semibold leading-tight tracking-[-0.02em] sm:text-[34px]; }
+  .h2 { @apply text-lg font-semibold tracking-[-0.01em]; }
+  .eyebrow { @apply text-2xs font-semibold uppercase tracking-[0.12em] text-ink-faint; }
+  .muted { @apply text-ink-muted; }
+  .hairline { @apply border-line/[0.08]; }
+
+  .card { @apply rounded-card border border-line/[0.08] bg-surface; }
+
+  .btn {
+    @apply inline-flex h-10 select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 text-sm font-medium
+           transition-colors disabled:pointer-events-none disabled:opacity-50;
+  }
+  .btn-primary { @apply btn bg-accent text-accent-ink hover:bg-accent-hover; }
+  .btn-secondary { @apply btn border border-line/[0.12] bg-raised text-ink hover:border-line/[0.22]; }
+  .btn-ghost { @apply btn text-ink-muted hover:bg-raised hover:text-ink; }
+  .btn-sm { @apply h-8 px-3 text-[13px]; }
+  .btn-icon { @apply btn h-10 w-10 px-0; }
+
+  .input {
+    @apply h-11 w-full rounded-lg border border-line/[0.12] bg-surface px-3.5 text-[15px] text-ink placeholder:text-ink-faint
+           transition-colors focus:border-accent/60 focus:outline-none;
+  }
+  .label { @apply mb-1.5 block text-[13px] font-medium text-ink-muted; }
+  .select { @apply input appearance-none pr-9; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23A09B93' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+
+  .chip { @apply inline-flex h-8 items-center gap-1.5 rounded-full border border-line/[0.12] px-3 text-[13px] text-ink-muted transition-colors hover:border-line/[0.24] hover:text-ink; }
+  .chip-on { @apply border-accent/50 bg-accent/10 text-accent hover:border-accent/70 hover:text-accent; }
+
+  .tag { @apply inline-flex items-center gap-1 rounded-md bg-raised px-2 py-0.5 text-2xs font-medium text-ink-muted; }
+
+  .poster { @apply relative aspect-[2/3] overflow-hidden rounded-lg bg-raised; }
+  .skeleton { @apply animate-pulse rounded-lg bg-raised; }
+
+  .link { @apply text-ink underline decoration-line/30 underline-offset-4 transition-colors hover:decoration-accent; }
+
+  .scroller { @apply flex snap-x gap-3 overflow-x-auto pb-2 sm:gap-4; scrollbar-width: none; }
+  .scroller::-webkit-scrollbar { display: none; }
 }
-a.link{ color: var(--nf-red); text-decoration: none; }
-a.link:hover{ text-decoration: underline; }
-.w-100{ width: 100%; }
 
-html, body { min-height: 100%; margin: 0; overflow-x: hidden; }
-
-
-mat-sidenav-container { height: auto !important; min-height: 100vh; }
-.mat-drawer-content,
-mat-drawer-content,
-mat-sidenav-content {
-  height: auto !important;
-  overflow: visible !important;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
-
-.side {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  max-height: 100vh;
-  overflow: auto;
-}
-
-/* Safety: avoid accidental horizontal scroll caused by wide children */
-* { box-sizing: border-box; }
-img, video { max-width: 100%; height: auto; display: block; }

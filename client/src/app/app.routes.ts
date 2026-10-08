@@ -1,16 +1,24 @@
 import { Routes } from '@angular/router';
-import { authGuard, guestGuard } from './guard/auth.guard';
+import { authGuard, guestGuard } from './core/guards';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'auth/login' },
-  { path: 'auth/login', loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent) },
-  { path: 'auth/register', loadComponent: () => import('./components/register/register.component').then(m => m.RegisterComponent) },
-  { path: 'home', loadComponent: () => import('./components/home/home.component').then(m => m.HomeComponent) },
-  { path: 'favorites/movies', canActivate: [authGuard], loadComponent: () => import('../app/components/favorites-movies/favorites-movies.component').then(m => m.FavoritesMoviesComponent),},
-  { path: 'trend', canActivate: [authGuard], loadComponent: () => import('./components/trending/trending.component').then(m => m.TrendingComponent)},
-  { path: 'movies/popular', loadComponent: () => import('./components/popular-movies/popular-movies.component').then(m => m.PopularMoviesComponent) },
-  { path: 'watchlist/movies', loadComponent: () => import('./components/watchlist-movies/watchlist-movies.component').then(m => m.WatchlistMoviesComponent) },
-  { path: 'movies/:id', loadComponent: () => import('./components/movie-details/movie-details.component').then(m => m.MovieDetailsComponent) },
-
+  { path: '', title: 'ShowTracker', loadComponent: () => import('./pages/home.page').then(m => m.HomePage) },
+  { path: 'discover', title: 'Discover · ShowTracker', loadComponent: () => import('./pages/discover.page').then(m => m.DiscoverPage) },
+  { path: 'search', title: 'Search · ShowTracker', loadComponent: () => import('./pages/search.page').then(m => m.SearchPage) },
+  { path: 'movie/:id', data: { type: 'movie' }, loadComponent: () => import('./pages/details.page').then(m => m.DetailsPage) },
+  { path: 'tv/:id', data: { type: 'tv' }, loadComponent: () => import('./pages/details.page').then(m => m.DetailsPage) },
+  { path: 'person/:id', loadComponent: () => import('./pages/person.page').then(m => m.PersonPage) },
+  { path: 'library', title: 'Library · ShowTracker', canActivate: [authGuard], loadComponent: () => import('./pages/library.page').then(m => m.LibraryPage) },
+  { path: 'diary', title: 'Diary · ShowTracker', canActivate: [authGuard], loadComponent: () => import('./pages/diary.page').then(m => m.DiaryPage) },
+  { path: 'stats', title: 'Stats · ShowTracker', canActivate: [authGuard], loadComponent: () => import('./pages/stats.page').then(m => m.StatsPage) },
+  { path: 'login', title: 'Sign in · ShowTracker', canActivate: [guestGuard], data: { mode: 'login' }, loadComponent: () => import('./pages/auth.page').then(m => m.AuthPage) },
+  { path: 'register', title: 'Create account · ShowTracker', canActivate: [guestGuard], data: { mode: 'register' }, loadComponent: () => import('./pages/auth.page').then(m => m.AuthPage) },
+  // Old URLs
+  { path: 'auth/login', redirectTo: 'login' },
+  { path: 'auth/register', redirectTo: 'register' },
+  { path: 'home', redirectTo: '' },
+  { path: 'movies/:id', redirectTo: 'movie/:id' },
+  { path: 'watchlist/movies', redirectTo: 'library' },
+  { path: 'favorites/movies', redirectTo: 'library' },
+  { path: '**', title: 'Not found · ShowTracker', loadComponent: () => import('./pages/not-found.page').then(m => m.NotFoundPage) },
 ];
-

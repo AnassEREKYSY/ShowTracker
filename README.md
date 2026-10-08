@@ -1,98 +1,64 @@
 # ShowTracker
 
-**ShowTracker** is a full-stack web application that allows users to search, track, and manage their favorite movies and TV series.  
-It leverages the [TMDB API](https://www.themoviedb.org/) to provide real-time data and integrates secure authentication, personalized watchlists, and favorites.
+Track the films and series you watch: a watchlist, episode-by-episode progress, a diary of everything you watched, and yearly stats. Film and series data come from [TMDB](https://www.themoviedb.org/).
 
+Live: https://showtracker.anasserekysy.com
 
-## Application 
+## Features
 
-### Login 
-![Login](./screenshots/login.png)
+- **Browse without an account**: trending, popular films and series, Discover (genre, year, minimum rating, sort) and search across films, series and people.
+- **Title pages**: trailer, where to watch in France (stream / rent / buy), cast, recommendations, key facts.
+- **Library**: Watching, Watchlist, Watched, Dropped and Favourites, with your own rating (half stars) and a private note per title.
+- **Series progress**: tick episodes or whole seasons; the series moves to Watching or Watched on its own. "Up next" on the home page shows the next episode of each series in progress.
+- **Diary**: what you watched, by month, with ratings and notes.
+- **Stats**: hours watched per month, films and episodes, average rating, top genres and actors.
+- **Actor pages**: biography, known for, full filmography.
 
-### Login 
-![Login](./screenshots/register.png)
+## Stack
 
-### Home Page
-![Home](./screenshots/home.png)
+| Part | Tech |
+|---|---|
+| Client | Angular 17 (standalone components, signals), Tailwind CSS, Playwright |
+| API | Node.js 20, Express 5, Prisma 6, PostgreSQL 16, Redis (TMDB cache), JWT (access token + httpOnly refresh cookie), Jest |
+| Delivery | Docker, GitHub Actions, GHCR, OVH VM behind an Nginx reverse proxy |
 
-### Home Page
-![Home](./screenshots/search.png)
+```
+client/   Angular app, served by Nginx (proxies /api to the API container)
+server/   Express API: catalog (TMDB, cached), auth, library, episodes, diary, stats
+deploy/   docker-compose.prod.yml + deploy.sh used on the VM
+```
 
-### Favorites
-![Favorites](./screenshots/fav.png)
+## Run locally
 
-### Popular 
-![Popular](./screenshots/popular.png)
+Requirements: Node 20, PostgreSQL, Redis, a TMDB API key.
 
-### Trend 
-![Trend](./screenshots/trend.png)
+```bash
+# API
+cd server
+cp .env.example .env        # fill DATABASE_URL, TMDB_API_KEY, JWT secrets
+npm install
+npx prisma db push          # creates or updates the schema
+npm run dev                 # http://localhost:4000
 
-##  Tech Stack
+# Client (another terminal)
+cd client
+npm install
+npm start                   # http://localhost:4200
+```
 
-**Frontend**
-- Angular 19  
-- TailwindCSS / Angular Material  
+## Tests
 
-**Backend**
-- Node.js (Express.js)  
-- Prisma ORM  
-- PostgreSQL  
-- Redis (for caching)  
-- JWT Authentication  
+```bash
+cd server && npm test        # unit tests (controllers, stats, TMDB mapping)
+cd client && npm run e2e     # Playwright, API mocked, starts the dev server itself
+```
 
-**DevOps & Tools**
-- Docker / Docker Compose  
-- GitHub Actions (CI/CD pipeline)  
-- Playwright (E2E tests)  
-- Jest (unit tests)  
+The pipeline also checks that the schema upgrade runs on a database created with the previous version without losing data.
+
+## Deployment
+
+Every push to `main` runs the tests, builds the two images, pushes them to GHCR and deploys them on the VM. See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ---
 
-## 📦 Installation & Setup
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) >= 18  
-- [PostgreSQL](https://www.postgresql.org/)  
-- [Redis](https://redis.io/)  
-- [Docker](https://www.docker.com/) (optional, for containerized setup)  
-
-### Clone the repository
-```bash
-git clone https://github.com/AnassEREKYSY/ShowTracker.git
-cd ShowTracker
-```
-### Environment Variables
-Create a .env file in the root
-
-### Run locally
-
-Backend 
-```bash
-cd server
-npm install
-npx prisma migrate dev
-npm run dev
-```
-
-Frontend 
-```bash
-cd client
-npm install
-ng serve
-```
-
-Unit Tests 
-```bash
-npm run test
-```
-
-E2E Tests 
-```bash
-npx playwright test
-```
-### CI/CD
-The project includes a GitHub Actions pipeline that:
-- Runs unit & E2E tests
-- Builds client & server Docker images
-- Pushes them to Docker Hub
-
+This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability by JustWatch.
